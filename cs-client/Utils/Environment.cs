@@ -8,6 +8,7 @@ namespace cs_client.Utils
 {
     public class Environment
     {
+        public virtual string Host { get; set; } = "localhost:8080";
         public virtual string GetEntropy()
         {
             string entropy = System.Environment.GetEnvironmentVariable(Constants.EnvEntropy);

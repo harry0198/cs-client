@@ -51,8 +51,9 @@
   <ItemGroup>
     <Compile Include="BaseTest.cs" />
     <Compile Include="Credentials\DPAPICredentialRepositoryTests.cs" />
+    <Compile Include="Credentials\JWTCredentialManagerTests.cs" />
+    <Compile Include="MockMemoryCredentialRepository.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="UnitTest2.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

@@ -1,5 +1,7 @@
 ﻿
 
+using Newtonsoft.Json;
+
 namespace cs_client.DTO
 {
     public class UserCredentials
@@ -10,7 +12,10 @@ namespace cs_client.DTO
             Password = password;
         }
 
+        [JsonProperty(PropertyName = "machineName")]
         public string Username { get;}
+
+        [JsonProperty(PropertyName = "password")]
         public string Password { get;}
     }
 }

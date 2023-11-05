@@ -22,7 +22,7 @@ namespace CsClientTests.Credentials
             string expectedUsername = "myUser";
             string expectedPwd = "password";
             ICredentialRepository repo = new MockMemoryCredentialRepository();
-            JWTCredentialManager credManager = new JWTCredentialManager(repo);
+            CredentialManager credManager = new CredentialManager(repo);
             repo.SaveCredential(Constants.UsernameCredentialKey, expectedUsername);
             repo.SaveCredential(Constants.PasswordCredentialKey, expectedPwd);
 
@@ -44,7 +44,7 @@ namespace CsClientTests.Credentials
         {
             // Arrange
             ICredentialRepository repo = new MockMemoryCredentialRepository();
-            JWTCredentialManager credManager = new JWTCredentialManager(repo);
+            CredentialManager credManager = new CredentialManager(repo);
 
             // Act
             UserCredentials creds = credManager.GetCredentials();
@@ -62,7 +62,7 @@ namespace CsClientTests.Credentials
         {
             // Arrange
             ICredentialRepository repo = new MockMemoryCredentialRepository();
-            JWTCredentialManager credManager = new JWTCredentialManager(repo);
+            CredentialManager credManager = new CredentialManager(repo);
             repo.SaveCredential(Constants.UsernameCredentialKey, "user");
 
             // Act
@@ -82,7 +82,7 @@ namespace CsClientTests.Credentials
         {
             // Arrange
             ICredentialRepository repo = new MockMemoryCredentialRepository();
-            JWTCredentialManager credManager = new JWTCredentialManager(repo);
+            CredentialManager credManager = new CredentialManager(repo);
             repo.SaveCredential(Constants.PasswordCredentialKey, "pass");
 
             // Act
@@ -101,7 +101,7 @@ namespace CsClientTests.Credentials
         {
             // Arrange
             ICredentialRepository repo = new MockMemoryCredentialRepository();
-            JWTCredentialManager credManager = new JWTCredentialManager(repo);
+            CredentialManager credManager = new CredentialManager(repo);
             string expectedUsername = "user";
             string expectedPassword = "pass";
             UserCredentials creds = new UserCredentials(expectedUsername, expectedPassword);
