@@ -10,40 +10,44 @@ namespace cs_client.Connection.Stomp
     public class StompMessageSerializer
     {
         /// <summary>
-        /// Serializes the specific message.
+        ///   Serializes the specified message.
         /// </summary>
-        /// <param name="message">The message.</param>
-        /// <returns>Serialized <see cref="StompMessage"/> for websocket form.</returns>
+        /// <param name = "message">The message.</param>
+        /// <returns>A serialized version of the given <see cref="StompMessage"/></returns>
         public string Serialize(StompMessage message)
         {
             var buffer = new StringBuilder();
+
             buffer.Append(message.Command + "\n");
 
             if (message.Headers != null)
             {
                 foreach (var header in message.Headers)
                 {
-                    buffer.Append(header.Key + ": " + header.Value + "\n");
+                    buffer.Append(header.Key + ":" + header.Value + "\n");
                 }
             }
 
             buffer.Append("\n");
             buffer.Append(message.Body);
-            buffer.Append("\0");
+            buffer.Append('\0');
 
             return buffer.ToString();
         }
 
         /// <summary>
-        /// Deserializes the specific message.
+        /// Deserializes the specified message.
         /// </summary>
-        /// <param name="message">Message to deserialize.</param>
-        /// <returns><see cref="StompMessage"/> instance.</returns>
+        /// <param name="message">The message.</param>
+        /// <returns>A <see cref="StompMessage"/> instance</returns>
         public StompMessage Deserialize(string message)
         {
             var reader = new StringReader(message);
+
             var command = reader.ReadLine();
+
             var headers = new Dictionary<string, string>();
+
             var header = reader.ReadLine();
             while (!string.IsNullOrEmpty(header))
             {

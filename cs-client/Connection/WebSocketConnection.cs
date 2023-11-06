@@ -1,13 +1,10 @@
 ﻿using cs_client.Connection.Stomp;
-using cs_client.Credentials;
 using cs_client.DTO;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using WebSocketSharp;
 
 namespace cs_client.Connection
@@ -27,34 +24,45 @@ namespace cs_client.Connection
         {
             // Impossible for the client to continue without the jwt so block until we have it.
             string jwt = _authenticationService.GetValidJwt().Result;
-            using (var websocket = new WebSocket($"ws://{_environment.Host}/handshake"))
+            using (var ws = new WebSocket("ws://localhost:8080/handshake"))
             {
-                websocket.OnMessage += OnMessage;
-                websocket.OnOpen += OnOpen;
-                websocket.OnError += OnError;
-                websocket.Connect();
+                ws.OnMessage += OnMessage;
+                ws.OnOpen += OnOpen;
+                ws.OnError += OnError;
+                ws.Connect();
                 Thread.Sleep(1000);
 
                 StompMessageSerializer serializer = new StompMessageSerializer();
 
-                var connect = new StompMessage(StompCommand.Connect);
+                var connect = new StompMessage("CONNECT");
                 connect["accept-version"] = "1.2";
                 connect["host"] = "";
                 connect["Authorization"] = $"Bearer {jwt}";
-                websocket.Send(serializer.Serialize(connect));
+                ws.Send(serializer.Serialize(connect));
+
+                var clientId = RandomString(5);
+                Console.WriteLine("Client Id :" + clientId);
+                Thread.Sleep(1000);
 
                 var sub = new StompMessage("SUBSCRIBE");
-                sub["id"] = "sub-01";
-                sub["destination"] = "/topic/greetings";
-                websocket.Send(serializer.Serialize(sub));
+                sub["id"] = "m-01";
+                sub["destination"] = "/channel/energy";
+                sub["Authorization"] = $"Bearer {jwt}";
+                ws.Send(serializer.Serialize(sub));
 
-                var energyStatistic = new EnergyStatistic();
-                var broad = new StompMessage(StompCommand.Send, JsonConvert.SerializeObject(energyStatistic));
+                Thread.Sleep(1000);
+                var statistic = new EnergyStatistic();
+                statistic.AppId = "hello!";
+                var list = new List<EnergyStatistic>();
+                list.Add(statistic);
+                var broad = new StompMessage("SEND", JsonConvert.SerializeObject(list, Formatting.Indented));
                 broad["content-type"] = "application/json";
-                broad["destination"] = "/energy";
-                websocket.Send(serializer.Serialize(broad));
+                broad["destination"] = "/publish/energy";
+                ws.Send(serializer.Serialize(broad));
 
+                Console.ReadKey(true);
             }
+
         }
 
         public static void OnOpen(object sender, EventArgs e)
@@ -65,12 +73,28 @@ namespace cs_client.Connection
 
         public static void OnMessage(object sender, MessageEventArgs e)
         {
+            Console.WriteLine(e.ToString());
             Console.WriteLine(DateTime.Now.ToString() + "WSMESS" + e.Data);
         }
 
         public static void OnError(object sender, ErrorEventArgs e)
         {
-            Console.WriteLine(DateTime.Now.ToString() + "WSERROR" + e.Message);
+            throw e.Exception;
+        }
+
+        public class Content
+        {
+            public string Subject { get; set; }
+            public string Message { get; set; }
+        }
+
+
+        public static string RandomString(int length)
+        {
+            const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+            var random = new Random();
+            return new string(Enumerable.Repeat(chars, length)
+              .Select(s => s[random.Next(s.Length)]).ToArray());
         }
     }
 }

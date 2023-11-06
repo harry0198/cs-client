@@ -8,6 +8,7 @@ namespace cs_client.Connection.Stomp
 {
     public class StompMessage
     {
+        private readonly Dictionary<string, string> _headers = new Dictionary<string, string>();
         /// <summary>
         /// Initializes an instance of the <see cref="StompMessage"/> class.
         /// </summary>
@@ -31,16 +32,16 @@ namespace cs_client.Connection.Stomp
         {
             Command = command;
             Body = body;
-            Headers = headers;
+            _headers = headers;
 
             // Set the content-length header.
             this["content-length"] = body.Length.ToString();
         }
 
-        /// <summary>
-        /// Gets the headers for the stomp message.
-        /// </summary>
-        public Dictionary<string, string> Headers { get; private set; } = new Dictionary<string, string>();
+        public Dictionary<string, string> Headers
+        {
+            get { return _headers; }
+        }
 
         /// <summary>
         /// Gets the body for the stomp message.
@@ -59,8 +60,8 @@ namespace cs_client.Connection.Stomp
         /// <returns></returns>
         public string this[string header]
         {
-            get { return this.Headers.ContainsKey(header) ? this.Headers[header] : string.Empty; }
-            set { Headers[header] = value; }
+            get { return this._headers.ContainsKey(header) ? this._headers[header] : string.Empty; }
+            set { _headers[header] = value; }
         }
     }
 }
