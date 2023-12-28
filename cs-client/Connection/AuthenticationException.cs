@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace cs_client.Connection
+namespace CsClient.Connection
 {
     public class AuthenticationException : ApplicationException
     {

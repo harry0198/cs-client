@@ -1,24 +1,31 @@
-﻿using cs_client.Credentials;
-using cs_client.Utils;
-using cs_client.DTO;
+﻿using CsClient.Connection;
+using CsClient.Connection.Service;
+using CsClient.Credentials;
+using CsClient.Data.DTO;
+using CsClient.Statistic;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using cs_client.Connection;
+using System.Net.WebSockets;
+using System.Threading;
 
-namespace cs_client
+namespace CsClient
 {
     public class Program
     {
         public static void Main(string[] args)
         {
+            
+            //
+            // IMPORTANT
+            // Unclear as to why.. but powercfg /srumutil does not work in x86 contexts. Build mode must be x64.
+            //
             Utils.Environment environment = new Utils.Environment();
             ICredentialRepository repository = new DPAPICredentialRepository(environment);
             ICredentialService credentialService = new CredentialManager(repository);
             AuthenticationService authenticationService = new AuthenticationService(environment, credentialService);
-            WebSocketConnection wsc = new WebSocketConnection(authenticationService, environment);
+            IWebSocket webSocket = new WebSocketDecorator();
+            WebSocketConnection wsc = new WebSocketConnection(authenticationService, environment, webSocket);
+            SystemStatistics systemStatistics = new SystemStatistics();
+
 
             bool authenticated = authenticationService.IsAuthorized();
             while (!authenticated)
@@ -34,33 +41,26 @@ namespace cs_client
 
                 UserCredentials credentials = new UserCredentials(username, password);
                 credentialService.SaveCredentials(credentials);
-
-                
             }
 
 
 
             wsc.Connect();
-
-/*
-
-            ICredentialRepository credentialRepository = new DPAPICredentialRepository(environment);
-            ICredentialService credentialService = new JWTCredentialManager(credentialRepository);
-
-            UserCredentials userCreds = credentialService.GetCredentials();
-
-            string machineId = System.Environment.MachineName;
-            Console.WriteLine($"Your machine id is {machineId}");
-
-            while (userCreds == null)
+            Console.ReadLine();
+            
+            /*
+            SystemStatistics statistics = new SystemStatistics();
+            while (true)
             {
-                Console.Write("Enter the machine passkey: ");
-                string passKey = Console.ReadLine();
+                float cpu = statistics.GetCpuUsageAsync().Result;
+                float disk = statistics.GetDiskUsageAsync().Result;
+                float mem = statistics.GetMemoryUsageAsync().Result;
 
-                if (passKey != null)
-                {
-                    // authenticate
-                }
+                Console.WriteLine("Cpu: " + cpu);
+                Console.WriteLine("Mem: " + mem);
+                Console.WriteLine("Disk: " + disk);
+
+                Thread.Sleep(1000);
             }*/
         }
     }

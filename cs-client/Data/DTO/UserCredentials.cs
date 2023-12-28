@@ -2,8 +2,12 @@
 
 using Newtonsoft.Json;
 
-namespace cs_client.DTO
+namespace CsClient.Data.DTO
 {
+    /// <summary>
+    /// Data Transfer Object for machine authorization.
+    /// Contains fields for the username and password.
+    /// </summary>
     public class UserCredentials
     {
         public UserCredentials(string userName, string password)

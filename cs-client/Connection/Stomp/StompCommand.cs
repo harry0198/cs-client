@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace cs_client.Connection.Stomp
+namespace CsClient.Connection.Stomp
 {
     public static class StompCommand
     {

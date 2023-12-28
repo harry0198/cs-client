@@ -1,6 +1,6 @@
-﻿using cs_client.Credentials;
+﻿using CsClient.Credentials;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using cs_client.Utils;
+using CsClient.Utils;
 using System.IO;
 
 namespace CsClientTests.Credentials
@@ -39,7 +39,7 @@ namespace CsClientTests.Credentials
         public void SaveCredentials_DoesSave()
         {
             // Arrange
-            var environment = new cs_client.Utils.Environment();
+            var environment = new CsClient.Utils.Environment();
             var wcm = new DPAPICredentialRepository(environment);
             var credentialKey = "username";
 
@@ -88,7 +88,7 @@ namespace CsClientTests.Credentials
         {
             // Arrange
             // Set the entropy to the one the test data uses (in case the default changes)
-            var wcm = new DPAPICredentialRepository(new cs_client.Utils.Environment());
+            var wcm = new DPAPICredentialRepository(new Environment());
             var credentialKey = "invalid_credential_key";
 
             System.Environment.CurrentDirectory = this.TestDir;
@@ -107,7 +107,7 @@ namespace CsClientTests.Credentials
         public void Integration_Test()
         {
             // Arrange
-            var environment = new cs_client.Utils.Environment();
+            var environment = new Environment();
             var wcm = new DPAPICredentialRepository(environment);
             var credentialKey = "username";
 
@@ -130,7 +130,7 @@ namespace CsClientTests.Credentials
         public void Integration_SaveCredentials_IsProtected()
         {
             // Arrange
-            var wcm = new DPAPICredentialRepository(new cs_client.Utils.Environment());
+            var wcm = new DPAPICredentialRepository(new Environment());
             var credentialKey = "username";
 
             var expectedCredentialValue = "m-01";
@@ -154,7 +154,7 @@ namespace CsClientTests.Credentials
         /// Overrides the <see cref="cs_client.Utils.Environment.GetEntropy"/> function.
         /// <see cref="cs_client.Utils.Environment"/>
         /// </summary>
-        public class MockEnvironment : cs_client.Utils.Environment
+        public class MockEnvironment : Environment
         {
             public string Entropy { get; set; } = Constants.DefaultEntropy;
             override public string GetEntropy()

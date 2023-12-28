@@ -1,5 +1,5 @@
-﻿using cs_client.Credentials;
-using cs_client.DTO;
+﻿using CsClient.Credentials;
+using CsClient.Data.DTO;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -10,7 +10,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace cs_client.Connection
+namespace CsClient.Connection.Service
 {
     public class AuthenticationService
     {

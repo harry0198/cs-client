@@ -1,4 +1,4 @@
-﻿namespace cs_client.Utils
+﻿namespace CsClient.Utils
 {
     public static class Constants
     {
@@ -36,5 +36,25 @@
         /// Key to store user password under.
         /// </summary>
         public static readonly string PasswordCredentialKey = "id";
+
+        /// <summary>
+        /// Environment variable to change the host with port.
+        /// </summary>
+        public static readonly string EnvHost = "CSCLIENT_HOST";
+
+        /// <summary>
+        /// Default host with port to connect with.
+        /// </summary>
+        public static readonly string DefaultHost = "localhost:8080";
+
+        /// <summary>
+        /// Default web socket url to connect with.
+        /// </summary>
+        public static readonly string DefaultWebSocketUrl = "ws://192.168.1.16:8080/handshake";
+
+        /// <summary>
+        /// Environment variable to change the web socket connection url.
+        /// </summary>
+        public static readonly string EnvWebSocketUrl = "CSCLIENT_WSURL";
     }
 }

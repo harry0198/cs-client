@@ -1,7 +1,7 @@
-﻿using cs_client.DTO;
+﻿using CsClient.Data.DTO;
 using System;
 
-namespace cs_client.Credentials
+namespace CsClient.Credentials
 {
     /// <summary>
     /// Interface representing a service for managing user credentials (login) and JWT.

@@ -6,8 +6,8 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{A7AFBDF9-1A21-4A85-9670-8BD05CE95FEB}</ProjectGuid>
     <OutputType>Exe</OutputType>
-    <RootNamespace>cs_client</RootNamespace>
-    <AssemblyName>Cs-client</AssemblyName>
+    <RootNamespace>CsClient</RootNamespace>
+    <AssemblyName>CsClient</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
@@ -15,6 +15,21 @@
     <TargetFrameworkProfile />
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
+    <PublishUrl>publish\</PublishUrl>
+    <Install>true</Install>
+    <InstallFrom>Disk</InstallFrom>
+    <UpdateEnabled>false</UpdateEnabled>
+    <UpdateMode>Foreground</UpdateMode>
+    <UpdateInterval>7</UpdateInterval>
+    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
+    <UpdatePeriodically>false</UpdatePeriodically>
+    <UpdateRequired>false</UpdateRequired>
+    <MapFileExtensions>true</MapFileExtensions>
+    <ApplicationRevision>0</ApplicationRevision>
+    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
+    <UseApplicationTrust>false</UseApplicationTrust>
+    <BootstrapperEnabled>true</BootstrapperEnabled>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -34,6 +49,32 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\x64\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <LangVersion>7.3</LangVersion>
+    <ErrorReport>prompt</ErrorReport>
+    <Prefer32Bit>true</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
+    <OutputPath>bin\x64\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <LangVersion>7.3</LangVersion>
+    <ErrorReport>prompt</ErrorReport>
+    <Prefer32Bit>true</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject>CsClient.Program</StartupObject>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Extend, Version=1.2.1.0, Culture=neutral, PublicKeyToken=869d4c589c0473ac, processorArchitecture=MSIL">
@@ -168,6 +209,7 @@
       <Private>True</Private>
       <Private>True</Private>
     </Reference>
+    <Reference Include="System.Management" />
     <Reference Include="System.Memory, Version=4.0.1.2, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Memory.4.5.5\lib\net461\System.Memory.dll</HintPath>
     </Reference>
@@ -287,29 +329,47 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Connection\AuthenticationException.cs" />
-    <Compile Include="Connection\AuthenticationService.cs" />
-    <Compile Include="Connection\ReportingService.cs" />
+    <Compile Include="Connection\IWebSocket.cs" />
+    <Compile Include="Connection\IWebSocketSerializer.cs" />
+    <Compile Include="Connection\Service\AuthenticationService.cs" />
+    <Compile Include="Connection\ConnectionConstants.cs" />
     <Compile Include="Connection\Stomp\StompCommand.cs" />
     <Compile Include="Connection\Stomp\StompMessage.cs" />
     <Compile Include="Connection\Stomp\StompMessageSerializer.cs" />
+    <Compile Include="Connection\WebSocketDecorator.cs" />
     <Compile Include="Connection\WebSocketConnection.cs" />
     <Compile Include="Credentials\ICredentialService.cs" />
     <Compile Include="Credentials\ICredentialRepository.cs" />
     <Compile Include="Credentials\CredentialManager.cs" />
     <Compile Include="Credentials\DPAPICredentialRepository.cs" />
-    <Compile Include="DTO\EnergyStatistic.cs" />
-    <Compile Include="DTO\LoginResponse.cs" />
-    <Compile Include="DTO\UserCredentials.cs" />
+    <Compile Include="Data\DTO\LoginResponse.cs" />
+    <Compile Include="Data\DTO\UserCredentials.cs" />
+    <Compile Include="Data\Repository\SrumUtilProcess.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Statistic\EnergyStatistic.cs" />
+    <Compile Include="Statistic\SystemStatistics.cs" />
     <Compile Include="Utils\Constants.cs" />
     <Compile Include="Utils\Environment.cs" />
+    <Compile Include="Utils\Optional.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <None Include="app.manifest" />
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <BootstrapperPackage Include=".NETFramework,Version=v4.7.2">
+      <Visible>False</Visible>
+      <ProductName>Microsoft .NET Framework 4.7.2 %28x86 and x64%29</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\packages\NETStandard.Library.2.0.3\build\netstandard2.0\NETStandard.Library.targets" Condition="Exists('..\packages\NETStandard.Library.2.0.3\build\netstandard2.0\NETStandard.Library.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

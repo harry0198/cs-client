@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.IO;
 using System.Text;
-using System.Threading.Tasks;
 
-namespace cs_client.Connection.Stomp
+namespace CsClient.Connection.Stomp
 {
     public class StompMessage
     {
@@ -28,13 +27,12 @@ namespace cs_client.Connection.Stomp
         /// <param name="command">Command.</param>
         /// <param name="body">Body to send in request.</param>
         /// <param name="headers">Headers to send in request.</param>
-        internal StompMessage(string command, string body, Dictionary<string, string> headers)
+        public StompMessage(string command, string body, Dictionary<string, string> headers)
         {
             Command = command;
             Body = body;
             _headers = headers;
 
-            // Set the content-length header.
             this["content-length"] = body.Length.ToString();
         }
 
@@ -56,12 +54,19 @@ namespace cs_client.Connection.Stomp
         /// <summary>
         /// Gets or sets the header attributes.
         /// </summary>
-        /// <param name="header"></param>
-        /// <returns></returns>
+        /// <param name="header">Header to get/set</param>
         public string this[string header]
         {
             get { return this._headers.ContainsKey(header) ? this._headers[header] : string.Empty; }
             set { _headers[header] = value; }
         }
+
+        /// <summary>
+        /// Sets the content type to plain text.
+        /// </summary>
+        public void SetPlainTextContentType()
+        {
+            this["content-type"] = "text/plain";
+        } 
     }
 }

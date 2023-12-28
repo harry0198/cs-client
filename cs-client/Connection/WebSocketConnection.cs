@@ -1,85 +1,94 @@
-﻿using cs_client.Connection.Stomp;
-using cs_client.DTO;
+﻿using CsClient.Connection.Service;
+using CsClient.Connection.Stomp;
+using CsClient.Data;
+using CsClient.Data.DTO;
+using CsClient.Statistic;
+using CsClient.Utils;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.WebSockets;
+using System.Text;
 using System.Threading;
-using WebSocketSharp;
 
-namespace cs_client.Connection
+namespace CsClient.Connection
 {
     public class WebSocketConnection
     {
         private readonly Utils.Environment _environment;
         private readonly AuthenticationService _authenticationService;
+        private readonly IWebSocket _webSocket;
 
-        public WebSocketConnection(AuthenticationService _authenticationService, Utils.Environment environment) 
+        public WebSocketConnection(AuthenticationService authenticationService, Utils.Environment environment, IWebSocket webSocket) 
         {
             this._environment = environment;
-            this._authenticationService = _authenticationService;
+            this._authenticationService = authenticationService;
+            this._webSocket = webSocket;
         }
 
-        public void Connect()
+        public async void Connect(string machineId)
         {
             // Impossible for the client to continue without the jwt so block until we have it.
-            string jwt = _authenticationService.GetValidJwt().Result;
-            using (var ws = new WebSocket("ws://localhost:8080/handshake"))
+            string jwt = await _authenticationService.GetValidJwt();
+
+            StompMessageSerializer serializer = new StompMessageSerializer();
+
+            try
             {
-                ws.OnMessage += OnMessage;
-                ws.OnOpen += OnOpen;
-                ws.OnError += OnError;
-                ws.Connect();
-                Thread.Sleep(1000);
+                await this._webSocket.ConnectAsync(_environment.WebSocketUrl);
 
-                StompMessageSerializer serializer = new StompMessageSerializer();
-
-                var connect = new StompMessage("CONNECT");
+                var connect = new StompMessage(StompCommand.Connect);
                 connect["accept-version"] = "1.2";
                 connect["host"] = "";
                 connect["Authorization"] = $"Bearer {jwt}";
-                ws.Send(serializer.Serialize(connect));
+                await _webSocket.SendAsync(serializer.Serialize(connect));
 
-                var clientId = RandomString(5);
-                Console.WriteLine("Client Id :" + clientId);
-                Thread.Sleep(1000);
-
-                var sub = new StompMessage("SUBSCRIBE");
-                sub["id"] = "m-01";
-                sub["destination"] = "/channel/energy";
-                sub["Authorization"] = $"Bearer {jwt}";
-                ws.Send(serializer.Serialize(sub));
-
-                Thread.Sleep(1000);
-                var statistic = new EnergyStatistic();
-                statistic.AppId = "hello!";
-                var list = new List<EnergyStatistic>();
-                list.Add(statistic);
-                var broad = new StompMessage("SEND", JsonConvert.SerializeObject(list, Formatting.Indented));
-                broad["content-type"] = "application/json";
-                broad["destination"] = "/publish/energy";
-                ws.Send(serializer.Serialize(broad));
-
-                Console.ReadKey(true);
+                while (_webSocket.State == WebSocketState.Open)
+                {
+                    var (result, content) = await _webSocket.ReceiveAsync();
+                    switch (result.MessageType)
+                    {
+                        case WebSocketMessageType.Text:
+                            Console.WriteLine(content);
+                            StompMessage message = serializer.Deserialize(content);
+                            string text = message.Body;
+                            if (text.Equals("REQUEST-ENERGY"))
+                            {
+                                EnergyStatistic stat = new EnergyStatistic();
+                                string samplePath = stat.NewSample();
+                                string statistics = stat.GetResults(samplePath);
+             
+                                var broad2 = new StompMessage(StompCommand.Send, statistics);
+                                broad2.SetPlainTextContentType();
+                                broad2["destination"] = "/publish/energy";
+                                try
+                                {
+                                    await _webSocket.SendAsync(serializer.Serialize(broad2));
+                                } catch (Exception e)
+                                {
+                                    Console.WriteLine(e.ToString());
+                                }
+                            }
+                            break;
+                        case WebSocketMessageType.Close:
+                            Console.WriteLine("Close message received.");
+                            break;
+                    }
+                }
             }
-
-        }
-
-        public static void OnOpen(object sender, EventArgs e)
-        {
-            Console.WriteLine("------");
-            Console.WriteLine(DateTime.Now.ToString() + "WSOPEN" + e.ToString());
-        }
-
-        public static void OnMessage(object sender, MessageEventArgs e)
-        {
-            Console.WriteLine(e.ToString());
-            Console.WriteLine(DateTime.Now.ToString() + "WSMESS" + e.Data);
-        }
-
-        public static void OnError(object sender, ErrorEventArgs e)
-        {
-            throw e.Exception;
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+            }
+            finally
+            {
+                if (_webSocket.State == WebSocketState.Open)
+                {
+                    // Close
+                    await _webSocket.CloseAsync();
+                }
+            }
         }
 
         public class Content

@@ -1,6 +1,6 @@
-﻿using cs_client.Credentials;
-using cs_client.DTO;
-using cs_client.Utils;
+﻿using CsClient.Credentials;
+using CsClient.Data.DTO;
+using CsClient.Utils;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace CsClientTests.Credentials

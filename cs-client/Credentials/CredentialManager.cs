@@ -1,8 +1,8 @@
-﻿using cs_client.DTO;
-using cs_client.Utils;
+﻿using CsClient.Data.DTO;
+using CsClient.Utils;
 using System;
 
-namespace cs_client.Credentials
+namespace CsClient.Credentials
 {
     /// <summary>
     /// An implementation of the <see cref="ICredentialService"/> interface for managing user credentials and JWT

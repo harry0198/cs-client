@@ -1,5 +1,4 @@
-﻿using cs_client.DTO;
-using cs_client.Utils;
+﻿using CsClient.Utils;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Console;
 using System;
@@ -11,7 +10,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace cs_client.Credentials
+namespace CsClient.Credentials
 {
     /// <summary>
     ///  Repository class for user credential information.

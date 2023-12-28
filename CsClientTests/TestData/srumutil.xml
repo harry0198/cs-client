@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<RecordSetRows>
+  <Record AppId="app" UserId="user" TimeStamp="9999-12-06:15:45:47.0000" OnBattery="FALSE" ScreenOn="FALSE" BatterySaverActive="FALSE" LowPowerEpochActive="FALSE" Foreground="FALSE" InteractivityState="NotUnique" Container="FALSE" Committed="TRUE" TimeInMSec="1830805" MeasuredBitmap="b000000000">
+    <EnergyLoss Value="0" />
+    <CPUEnergyConsumption Value="5" />
+    <SocEnergyConsumption Value="10" />
+    <DisplayEnergyConsumption Value="20" />
+    <DiskEnergyConsumption Value="38" />
+    <NetworkEnergyConsumption Value="40" />
+    <MBBEnergyConsumption Value="50" />
+    <OtherEnergyConsumption Value="60" />
+    <EmiEnergyConsumption Value="70" />
+    <CPUEnergyConsumptionWorkOnBehalf Value="80" />
+    <CPUEnergyConsumptionAttributed Value="90" />
+    <TotalEnergyConsumption Value="100" />
+  </Record>
+  <Record AppId="app" UserId="user" TimeStamp="9999-12-06:15:45:47.0000" OnBattery="FALSE" ScreenOn="FALSE" BatterySaverActive="FALSE" LowPowerEpochActive="FALSE" Foreground="FALSE" InteractivityState="NotUnique" Container="FALSE" Committed="TRUE" TimeInMSec="60006" MeasuredBitmap="b000000000">
+    <EnergyLoss Value="0" />
+    <CPUEnergyConsumption Value="1" />
+    <SocEnergyConsumption Value="2" />
+    <DisplayEnergyConsumption Value="3" />
+    <DiskEnergyConsumption Value="4" />
+    <NetworkEnergyConsumption Value="5" />
+    <MBBEnergyConsumption Value="6" />
+    <OtherEnergyConsumption Value="7" />
+    <EmiEnergyConsumption Value="8" />
+    <CPUEnergyConsumptionWorkOnBehalf Value="9" />
+    <CPUEnergyConsumptionAttributed Value="10" />
+    <TotalEnergyConsumption Value="11" />
+  </Record>
+	<Record AppId="ignoreme" UserId="user" TimeStamp="2023-12-06:15:45:47.0000" OnBattery="FALSE" ScreenOn="FALSE" BatterySaverActive="FALSE" LowPowerEpochActive="FALSE" Foreground="FALSE" InteractivityState="NotUnique" Container="FALSE" Committed="TRUE" TimeInMSec="60006" MeasuredBitmap="b000000000">
+		<EnergyLoss Value="0" />
+		<CPUEnergyConsumption Value="1" />
+		<SocEnergyConsumption Value="2" />
+		<DisplayEnergyConsumption Value="3" />
+		<DiskEnergyConsumption Value="4" />
+		<NetworkEnergyConsumption Value="5" />
+		<MBBEnergyConsumption Value="6" />
+		<OtherEnergyConsumption Value="7" />
+		<EmiEnergyConsumption Value="8" />
+		<CPUEnergyConsumptionWorkOnBehalf Value="9" />
+		<CPUEnergyConsumptionAttributed Value="10" />
+		<TotalEnergyConsumption Value="11" />
+	</Record>
+</RecordSetRows>

@@ -1,7 +1,6 @@
-﻿using cs_client.DTO;
-using System;
+﻿using System;
 
-namespace cs_client.Credentials
+namespace CsClient.Credentials
 {
     /// <summary>
     /// Interface for handling the access portion to credentials.

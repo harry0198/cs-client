@@ -1,4 +1,4 @@
-﻿using cs_client.Credentials;
+﻿using CsClient.Credentials;
 using System.Collections.Generic;
 
 namespace CsClientTests

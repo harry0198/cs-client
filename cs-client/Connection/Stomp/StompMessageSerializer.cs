@@ -1,16 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
-namespace cs_client.Connection.Stomp
+namespace CsClient.Connection.Stomp
 {
-    public class StompMessageSerializer
+    public class StompMessageSerializer: IWebSocketSerializer<StompMessage>
     {
         /// <summary>
-        ///   Serializes the specified message.
+        /// Serializes the specified message.
         /// </summary>
         /// <param name = "message">The message.</param>
         /// <returns>A serialized version of the given <see cref="StompMessage"/></returns>
@@ -42,13 +39,13 @@ namespace cs_client.Connection.Stomp
         /// <returns>A <see cref="StompMessage"/> instance</returns>
         public StompMessage Deserialize(string message)
         {
+            // Initialize
             var reader = new StringReader(message);
-
             var command = reader.ReadLine();
-
             var headers = new Dictionary<string, string>();
-
             var header = reader.ReadLine();
+
+            // Check if string is
             while (!string.IsNullOrEmpty(header))
             {
                 var split = header.Split(':');
