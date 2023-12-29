@@ -59,5 +59,10 @@
         /// Header in the energy usage generated csv file.
         /// </summary>
         public static readonly string EmiEnergyConsumption = "emi";
+
+        /// <summary>
+        /// Header in the energy usage generated csv file.
+        /// </summary>
+        public static readonly string AccountType = "acc-type";
     }
 }

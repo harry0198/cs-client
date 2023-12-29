@@ -1,61 +1,68 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Principal;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Security.Principal;
 using System.DirectoryServices.AccountManagement;
 using NLog;
 
 namespace CsClient.Credentials
 {
+#nullable enable
     /// <summary>
     /// Contains helper functions for handling SID (security identifiers).
     /// </summary>
-    public class WindowsSIDAccountHelper
+    public class WindowsSIDAccountHelper : IAccountHelper
     {
         private static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
-        /// <summary>
-        /// Checks if the account is a valid user account.
-        /// Checks across both local and domain contexts.
-        /// </summary>
-        /// <param name="sid">Security Identifier to check.</param>
-        /// <param name="accountType">output AccountType of user. Ie. Local, Domain etc.</param>
-        /// <returns>True if is valid user account. If multiple accounts exist with same SID, returns false.</returns>
-        public static bool IsValidUserAccount(SecurityIdentifier sid, out AccountType accountType)
+        /// <inheritdoc/>
+        public AccountDetails? GetUserAccount(string sid)
+        {
+            SecurityIdentifier securityIdentifier = new SecurityIdentifier(sid);
+            return GetUserAccount(securityIdentifier);
+        }
+        
+        /// <inheritdoc/>
+        public AccountDetails? GetValidUserAccount(string sid, AccountType context)
+        {
+            SecurityIdentifier identifier = new SecurityIdentifier(sid);
+            ContextType contextType;
+            switch (context)
+            {
+                case AccountType.LOCAL:
+                    contextType = ContextType.Machine;
+                    break;
+                case AccountType.DOMAIN:
+                    contextType = ContextType.Domain;
+                    break;
+                default:
+                    return null;
+            }
+
+            return GetValidUserAccount(identifier, contextType);
+        }
+
+        private AccountDetails? GetUserAccount(SecurityIdentifier sid)
         {
             logger.Info("Starting SID user account check");
 
             logger.Info("Checking for local account validity.");
-            if (IsValidUserAccount(sid, ContextType.Machine, out string))
+            AccountDetails? localAccountDetails = GetValidUserAccount(sid, ContextType.Machine);
+            if (localAccountDetails != null)
             {
-                accountType = AccountType.LOCAL;
-                return true;
+                return localAccountDetails;
             }
 
             logger.Info("Checking for domain account validity.");
-            if (IsValidUserAccount(sid, ContextType.Domain))
+            AccountDetails? domainAccountDetails = GetValidUserAccount(sid, ContextType.Domain);
+            if (domainAccountDetails != null)
             {
-                accountType = AccountType.DOMAIN;
-                return true;
+                return domainAccountDetails;
             }
 
             logger.Info("Account was not valid.");
-            accountType = AccountType.UNKNOWN;
-            return false;
+            return null;
 
         }
 
-        /// <summary>
-        /// Checks if the given account is a valid user account. If the account type is not a user 
-        /// e.g. group. This returns false. If there are multiple matches with the same SID, returns false.
-        /// </summary>
-        /// <param name="sid">Security Identifier to Check.</param>
-        /// <param name="context">Context to check. E.g Local or Domain.</param>
-        /// <param name="accountName">User's account name or null.</param>
-        /// <returns></returns>
-        public static bool IsValidUserAccount(SecurityIdentifier sid, ContextType context, out string accountName)
+        private AccountDetails? GetValidUserAccount(SecurityIdentifier sid, ContextType context)
         {
             try
             {
@@ -70,30 +77,40 @@ namespace CsClient.Credentials
                     if (principal != null && principal is UserPrincipal)
                     {
                         logger.Info("Found user");
-                        accountName = principal.SamAccountName;
-                        return true;
+                        AccountType accountType;
+                        switch (context)
+                        {
+                            case ContextType.Machine:
+                                accountType = AccountType.LOCAL;
+                                break;
+                            case ContextType.Domain:
+                                accountType = AccountType.DOMAIN;
+                                break;
+                            default:
+                                accountType = AccountType.UNKNOWN;
+                                break;
+                        }
+
+                        return new AccountDetails(sid.Value, accountType, principal.SamAccountName);
                     }
 
-
                     logger.Info("No user account found");
-                    accountName = null;
-                    return false;
+                    return null;
                 }
             }
             catch (MultipleMatchesException mme)
             {
                 logger.Error("More than one user with this SID exists. Cannot check account. SID: " + sid.Value);
                 logger.Error(mme.Message);
-                accountName = null;
-                return false;
+                return null;
             }
             catch (PrincipalServerDownException psde)
             {
                 logger.Warn("Cannot connect to the domain server. Ignore if this machine is not part of a domain network.");
                 logger.Warn(psde.Message);
-                accountName = null;
-                return false;
+                return null;
             }
         }
     }
+#nullable restore
 }

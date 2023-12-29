@@ -10,28 +10,28 @@ namespace CsClientTests.Credentials
     [TestClass]
     public class WindowsSIDAccountHelperTests
     {
+        private WindowsSIDAccountHelper _helper;
+        [TestInitialize] 
+        public void Init() 
+        {
+            this._helper = new WindowsSIDAccountHelper();
+        }
         /// <summary>
         /// Tests the <see cref="WindowsSIDAccountHelper.IsValidUserAccount(SecurityIdentifier, out AccountType)"/> 
         /// with various SIDs and checks if the results are as expected.
         /// </summary>
         /// <param name="sid">The Security Identifier to test.</param>
-        /// <param name="expectedIsUser">The expected result of whether it is a user account.</param>
-        /// <param name="expectedAccountType">The expected account type.</param>
+        /// <param name="expectedIsNull">The expected result of whether it is null or not.</param>
         [TestMethod]
-        [DataRow("S-1-1-0", false, AccountType.UNKNOWN)] // Example SID for 'World'
-        [DataRow("S-1-5-18", false, AccountType.UNKNOWN)]  // Example SID for 'Local System'
-                                                        // Add more DataRows here for other test cases
-        public void IsUserAccount_Parameterized(string sid, bool expectedIsUser, AccountType expectedAccountType)
+        [DataRow("S-1-1-0", true)] // Example SID for 'World'
+        [DataRow("S-1-5-18", true)]  // Example SID for 'Local System'
+        public void GetUserAccount_Parameterized(string sid, bool expectedIsNull)
         {
-            // Arrange
-            SecurityIdentifier securityIdentifier = new SecurityIdentifier(sid);
-
             // Act
-            bool isUser = WindowsSIDAccountHelper.IsValidUserAccount(securityIdentifier, out AccountType accountType);
+            AccountDetails accountDetails = _helper.GetUserAccount(sid);
 
             // Assert
-            Assert.AreEqual(expectedIsUser, isUser);
-            Assert.AreEqual(expectedAccountType, accountType);
+            Assert.AreEqual(expectedIsNull, accountDetails == null);
         }
 
         /// <summary>
@@ -40,18 +40,18 @@ namespace CsClientTests.Credentials
         /// the currently logged in user.
         /// </summary>
         [TestMethod]
-        public void IsUserAccount_ThisAccountLocal()
+        public void GetUserAccount_ThisAccountLocal()
         {
             // Arrange
             List<AccountType> expectedAccountType = new List<AccountType>() { AccountType.DOMAIN, AccountType.LOCAL };
             SecurityIdentifier sid = WindowsIdentity.GetCurrent().User;
 
             // Act
-            bool isUser = WindowsSIDAccountHelper.IsValidUserAccount(sid, out AccountType accountType);
+            AccountDetails accountDetail = _helper.GetUserAccount(sid.Value);
 
             // Assert
-            Assert.IsTrue(isUser);
-            Assert.IsTrue(expectedAccountType.Contains(accountType));
+            Assert.IsNotNull(accountDetail);
+            Assert.IsTrue(expectedAccountType.Contains(accountDetail.AccountType));
         }
     }
 }

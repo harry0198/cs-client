@@ -1,5 +1,8 @@
-﻿using CsClient.Utils;
+﻿using CsClient.Credentials;
+using CsClient.Utils;
+using Extend;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -14,10 +17,12 @@ namespace CsClient.Statistic
     public class EnergyStatisticsCsvProcessor
     {
         private readonly string _resultPath;
+        private readonly IAccountHelper _accountHelper;
 
-        public EnergyStatisticsCsvProcessor(string resultPath)
+        public EnergyStatisticsCsvProcessor(string resultPath, IAccountHelper accountHelper)
         {
             _resultPath = resultPath;
+            _accountHelper = accountHelper;
         }
 
         /// <summary>
@@ -26,31 +31,34 @@ namespace CsClient.Statistic
         /// <returns>Processed CSV data as a string.</returns>
         public string ProcessCsv()
         {
-            StringBuilder sb = new StringBuilder();
-            AddHeaders(sb);
+            string[] allLines = File.ReadAllLines(_resultPath);
 
-            using (StreamReader reader = new StreamReader(_resultPath))
+            string header = allLines.FirstOrDefault();
+            string[] dataLines = allLines.Skip(1).ToArray();
+            CsvParser csvParser = new CsvParser(header);
+
+            // Use thread safe collection. Order of the processed lines is irrelevant
+            ConcurrentBag<string> processedLines = new ConcurrentBag<string>();
+
+            // Concurrently process each line in the file.
+            Parallel.ForEach(dataLines, (line) =>
             {
-                string headerLine = reader.ReadLine();
-                CsvParser csvParser = new CsvParser(headerLine);
+                string processedLine = ProcessLine(csvParser, line);
 
-                while (!reader.EndOfStream)
+                // Add to concurrent bag if not null or is empty.
+                if (!processedLine.IsNullOrEmpty())
                 {
-                    string line = reader.ReadLine();
-                    string processedLine = ProcessLine(csvParser, line);
-                    if (!string.IsNullOrEmpty(processedLine))
-                    {
-                        sb.AppendLine(processedLine);
-                    }
+                    processedLines.Add(processedLine);
                 }
-            }
+            });
 
-            return sb.ToString();
+
+            return GetHeader() + System.Environment.NewLine + string.Join(System.Environment.NewLine, processedLines);
         }
 
-        private void AddHeaders(StringBuilder sb)
+        private static string GetHeader()
         {
-            sb.AppendLine(
+            return
                 $"{CsClientCsvHeaders.AppId}," +
                 $"{CsClientCsvHeaders.UserId}," +
                 $"{CsClientCsvHeaders.TimeStamp}," +
@@ -61,7 +69,8 @@ namespace CsClient.Statistic
                 $"{CsClientCsvHeaders.NetworkEnergyConsumption}," +
                 $"{CsClientCsvHeaders.MBBEnergyConsumption}," +
                 $"{CsClientCsvHeaders.OtherEnergyConsumption}," +
-                $"{CsClientCsvHeaders.EmiEnergyConsumption}");
+                $"{CsClientCsvHeaders.EmiEnergyConsumption}," + 
+                $"{CsClientCsvHeaders.AccountType}";
         }
 
         private string ProcessLine(CsvParser csvParser, string line)
@@ -81,11 +90,18 @@ namespace CsClient.Statistic
         private string BuildCsvLine(CsvParser csvParser, string[] parts, DateTime dateTime)
         {
             StringBuilder csvLineBuilder = new StringBuilder();
-            string appId = csvParser.GetStringValueWithHeader(MicrosoftCsvHeaders.AppId, parts) ?? "";
+            string appId = csvParser.GetStringValueWithHeader(MicrosoftCsvHeaders.AppId, parts) ?? string.Empty;
             appId = TruncateStringToLastSlash(appId);
 
+            string userSID = csvParser.GetStringValueWithHeader(MicrosoftCsvHeaders.UserId, parts) ?? string.Empty;
+            AccountDetails? windowsAccountDetails = _accountHelper.GetUserAccount(userSID);
+
+            // If it is not a user account / account does not exist, ignore.
+            if (windowsAccountDetails == null || windowsAccountDetails.AccountType == AccountType.UNKNOWN) return null;
+
+
             csvLineBuilder.Append(appId + ","); // app
-            csvLineBuilder.Append((csvParser.GetStringValueWithHeader(MicrosoftCsvHeaders.UserId, parts) ?? "") + ",");// user
+            csvLineBuilder.Append(windowsAccountDetails.AccountName + ",");// user
             csvLineBuilder.Append(new DateTimeOffset(dateTime).ToUnixTimeMilliseconds() + ","); // timestamp
             csvLineBuilder.Append((csvParser.GetStringValueWithHeader(MicrosoftCsvHeaders.CPUEnergyConsumption, parts) ?? "") + ","); // cpu
             csvLineBuilder.Append((csvParser.GetStringValueWithHeader(MicrosoftCsvHeaders.SocEnergyConsumption, parts) ?? "") + ","); // soc
@@ -94,7 +110,8 @@ namespace CsClient.Statistic
             csvLineBuilder.Append((csvParser.GetStringValueWithHeader(MicrosoftCsvHeaders.NetworkEnergyConsumption, parts) ?? "") + ","); // network
             csvLineBuilder.Append((csvParser.GetStringValueWithHeader(MicrosoftCsvHeaders.MBBEnergyConsumption, parts) ?? "") + ","); // mbb
             csvLineBuilder.Append((csvParser.GetStringValueWithHeader(MicrosoftCsvHeaders.OtherEnergyConsumption, parts) ?? "") + ","); // other
-            csvLineBuilder.Append(csvParser.GetStringValueWithHeader(MicrosoftCsvHeaders.EmiEnergyConsumption, parts) ?? ""); // emi
+            csvLineBuilder.Append((csvParser.GetStringValueWithHeader(MicrosoftCsvHeaders.EmiEnergyConsumption, parts) ?? "") + ","); // emi
+            csvLineBuilder.Append(Enum.GetName(typeof(AccountType), windowsAccountDetails.AccountType)); // Account Type
 
             return csvLineBuilder.ToString();
         }

@@ -1,5 +1,6 @@
 ﻿using CsClient.Connection.Service;
 using CsClient.Connection.Stomp;
+using CsClient.Credentials;
 using CsClient.Data;
 using CsClient.Data.DTO;
 using CsClient.Statistic;
@@ -58,7 +59,7 @@ namespace CsClient.Connection
                                 EnergyStatisticTask stat = new EnergyStatisticTask();
                                 string samplePath = stat.NewSample();
 
-                                EnergyStatisticsCsvProcessor csvProcessor = new EnergyStatisticsCsvProcessor(samplePath);
+                                EnergyStatisticsCsvProcessor csvProcessor = new EnergyStatisticsCsvProcessor(samplePath, new WindowsSIDAccountHelper());
                                 string statistics = csvProcessor.ProcessCsv();
 
                                 var broad2 = new StompMessage(StompCommand.Send, statistics);

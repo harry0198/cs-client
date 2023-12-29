@@ -11,7 +11,7 @@ namespace CsClientTests
     {
         public BaseTest()
         {
-            TestDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "../../TestData");
+            TestDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "../../../TestData");
             TempDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "temp");
             if (!Directory.Exists(TempDir))
             {

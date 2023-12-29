@@ -5,6 +5,8 @@ using CsClient.Statistic;
 using System.Collections.Generic;
 using CsClient.Data.DTO;
 using System.IO;
+using System.Security.Principal;
+using CsClient.Credentials;
 
 namespace CsClientTests.Connection
 {
@@ -25,7 +27,8 @@ namespace CsClientTests.Connection
             $"{CsClientCsvHeaders.NetworkEnergyConsumption}," +
             $"{CsClientCsvHeaders.MBBEnergyConsumption}," +
             $"{CsClientCsvHeaders.OtherEnergyConsumption}," +
-            $"{CsClientCsvHeaders.EmiEnergyConsumption}";
+            $"{CsClientCsvHeaders.EmiEnergyConsumption}," + 
+            $"{CsClientCsvHeaders.AccountType}";
 
         /// <summary>
         /// Tests that the <see cref="ParseMicrosoftEnergyCsvFile"/> function works as expected with actual csv file data.
@@ -35,14 +38,18 @@ namespace CsClientTests.Connection
         {
             // Arrange
             string resultPath = Path.Combine(TestDir, "energydata.csv");
-            EnergyStatisticsCsvProcessor energyStatistic = new EnergyStatisticsCsvProcessor(resultPath);
-            string expectedResult = $"{header}\r\nMicrosoftWindows.Client.CBS_1000.22677.1000.0_x64__cw5n1h2txyewy,S-1-5-21-1185468707-2193096746-2254507262-1001,253400111147000,517,20,30,38,40,50,60,70\r\nMicrosoft.Windows.StartMenuExperienceHost_10.0.22621.2506_neutral_neutral_cw5n1h2txyewy,S-1-5-21-1185468707-2193096746-2254507262-1001,253400111147000,1,90,20,30,40,50,60,70\r\n";
+            EnergyStatisticsCsvProcessor energyStatistic = new EnergyStatisticsCsvProcessor(resultPath, new WindowsSIDAccountHelper());
+            string firstLine = $"{header}\r\n";
+            string entry1 = $"MicrosoftWindows.Client.CBS_1000.22677.1000.0_x64__cw5n1h2txyewy,harry,253400111147000,517,20,30,38,40,50,60,70,LOCAL";
+            string entry2 = $"Microsoft.Windows.StartMenuExperienceHost_10.0.22621.2506_neutral_neutral_cw5n1h2txyewy,harry,253400111147000,1,90,20,30,40,50,60,70,LOCAL";
 
             // Act
             string results = energyStatistic.ProcessCsv();
 
             // Assert
-            Assert.AreEqual(expectedResult, results);
+            Assert.IsTrue(results.StartsWith(firstLine));
+            Assert.IsTrue(results.Contains(entry1));
+            Assert.IsTrue(results.Contains(entry2));
         }
     }
 }
