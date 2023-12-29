@@ -36,7 +36,7 @@ namespace CsClient.Connection
 
             try
             {
-                await this._webSocket.ConnectAsync(_environment.WebSocketUrl);
+                await this._webSocket.ConnectAsync(_environment.GetWebSocketUrl());
 
                 var connect = new StompMessage(StompCommand.Connect);
                 connect["accept-version"] = "1.2";
@@ -55,10 +55,12 @@ namespace CsClient.Connection
                             string text = message.Body;
                             if (text.Equals("REQUEST-ENERGY"))
                             {
-                                EnergyStatistic stat = new EnergyStatistic();
+                                EnergyStatisticTask stat = new EnergyStatisticTask();
                                 string samplePath = stat.NewSample();
-                                string statistics = stat.GetResults(samplePath);
-             
+
+                                EnergyStatisticsCsvProcessor csvProcessor = new EnergyStatisticsCsvProcessor(samplePath);
+                                string statistics = csvProcessor.ProcessCsv();
+
                                 var broad2 = new StompMessage(StompCommand.Send, statistics);
                                 broad2.SetPlainTextContentType();
                                 broad2["destination"] = "/publish/energy";

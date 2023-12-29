@@ -49,7 +49,7 @@ namespace CsClient.Connection.Service
                 string body = JsonConvert.SerializeObject(creds);
                 StringContent content = new StringContent(body, System.Text.Encoding.UTF8, "application/json");
 
-                var response = await client.PostAsync($"http://{_environment.Host}/auth/login", content);
+                var response = await client.PostAsync($"http://{_environment.GetHost()}/auth/login", content);
 
                 if (response.IsSuccessStatusCode)
                 {

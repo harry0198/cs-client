@@ -4,8 +4,6 @@ using CsClient.Credentials;
 using CsClient.Data.DTO;
 using CsClient.Statistic;
 using System;
-using System.Net.WebSockets;
-using System.Threading;
 
 namespace CsClient
 {
@@ -43,9 +41,8 @@ namespace CsClient
                 credentialService.SaveCredentials(credentials);
             }
 
-
-
-            wsc.Connect();
+            string machineName = credentialService.GetCredentials().Username ?? throw new ArgumentNullException("User credentials were used to login and stored, but could not be fetched from keystore.");
+            wsc.Connect(machineName);
             Console.ReadLine();
             
             /*

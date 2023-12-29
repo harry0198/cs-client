@@ -55,7 +55,7 @@ namespace CsClient.Utils
 
             for (int i = 0; i < headers.Length; i++)
             {
-                string header = headers[i];
+                string header = headers[i].Trim();
                 headerToColumn[header] = i;
             }
         }
