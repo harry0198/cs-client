@@ -34,6 +34,11 @@ namespace CsClientTests.Credentials
             Assert.AreEqual(expectedAccountType, accountType);
         }
 
+        /// <summary>
+        /// Tests the <see cref="WindowsSIDAccountHelper.IsValidUserAccount(SecurityIdentifier, out AccountType)"/>
+        /// with the current account. This account will be a user and this test is invariable to the Local / Domain of
+        /// the currently logged in user.
+        /// </summary>
         [TestMethod]
         public void IsUserAccount_ThisAccountLocal()
         {

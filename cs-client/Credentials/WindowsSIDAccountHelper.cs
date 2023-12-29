@@ -28,7 +28,7 @@ namespace CsClient.Credentials
             logger.Info("Starting SID user account check");
 
             logger.Info("Checking for local account validity.");
-            if (IsValidUserAccount(sid, ContextType.Machine))
+            if (IsValidUserAccount(sid, ContextType.Machine, out string))
             {
                 accountType = AccountType.LOCAL;
                 return true;

@@ -6,7 +6,5 @@ using System.Threading.Tasks;
 
 namespace CsClient.Credentials
 {
-    internal class WindowsAccountDetails
-    {
-    }
+    public record WindowsAccountDetails(string test);
 }
