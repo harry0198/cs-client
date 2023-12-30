@@ -11,19 +11,19 @@ namespace CsClient
     {
         public static void Main(string[] args)
         {
-            
             //
             // IMPORTANT
             // Unclear as to why.. but powercfg /srumutil does not work in x86 contexts. Build mode must be x64.
             //
+            WriteAsciiNameToWindow();
+
             Utils.Environment environment = new Utils.Environment();
             ICredentialRepository repository = new DPAPICredentialRepository(environment);
             ICredentialService credentialService = new CredentialManager(repository);
             AuthenticationService authenticationService = new AuthenticationService(environment, credentialService);
             IWebSocket webSocket = new WebSocketDecorator();
-            WebSocketConnection wsc = new WebSocketConnection(authenticationService, environment, webSocket);
-            SystemStatistics systemStatistics = new SystemStatistics();
-
+            
+            WebSocketConnection wsc = new WebSocketConnection(environment, webSocket);
 
             bool authenticated = authenticationService.IsAuthorized();
             while (!authenticated)
@@ -42,8 +42,10 @@ namespace CsClient
             }
 
             string machineName = credentialService.GetCredentials().Username ?? throw new ArgumentNullException("User credentials were used to login and stored, but could not be fetched from keystore.");
-            wsc.Connect(machineName);
-            Console.ReadLine();
+            string jwt = authenticationService.GetValidJwt().Result;
+
+            WebSocketConnectionTask webSocketTask = new WebSocketConnectionTask(wsc);
+            webSocketTask.Run(jwt, machineName).Wait();
             
             /*
             SystemStatistics statistics = new SystemStatistics();
@@ -59,6 +61,28 @@ namespace CsClient
 
                 Thread.Sleep(1000);
             }*/
+        }
+
+        private static void WriteAsciiNameToWindow()
+        {
+            string[] ascii =
+            {
+                "=======================================================================",
+                "## ##    ## ##    ## ##   ####       ####   ### ###  ###  ##  #### ##", 
+                "##   ##  ##   ##  ##   ##   ##         ##     ##  ##    ## ##  # ## ##",
+                "##       ####     ##        ##         ##     ##       # ## #    ##",
+                "##        #####   ##        ##         ##     ## ##    ## ##     ##",
+                "##           ###  ##        ##         ##     ##       ##  ##    ##",
+                "##   ##  ##   ##  ##   ##   ##  ##     ##     ##  ##   ##  ##    ##",
+                "## ##    ## ##    ## ##   ### ###    ####   ### ###  ###  ##   ####",
+                "=======================================================================",
+                "",
+            };
+
+            foreach (var item in ascii)
+            {
+                Console.WriteLine(item);
+            }
         }
     }
 }

@@ -2,6 +2,15 @@
 {
     public static class Constants
     {
+        public static readonly string EnergyPingMessage = "REQUEST-ENERGY";
+        /// <summary>
+        /// The websocket endpoint to publish energy statistics to.
+        /// </summary>
+        public static readonly string EnergyPublishEndpoint = "/publish/energy";
+        /// <summary>
+        /// The websocket subscription endpoint that pings the client (this app).
+        /// </summary>
+        public static readonly string PingEndpoint = "/channel/request";
         /// <summary>
         /// Name of this application.
         /// </summary>
