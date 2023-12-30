@@ -1,5 +1,6 @@
 ﻿using CsClient.Connection;
 using CsClient.Connection.Service;
+using CsClient.Connection.WebSocket;
 using CsClient.Credentials;
 using CsClient.Data.DTO;
 using CsClient.Statistic;

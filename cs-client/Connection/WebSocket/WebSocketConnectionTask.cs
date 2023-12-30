@@ -10,7 +10,7 @@ using System.Net.WebSockets;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CsClient.Connection
+namespace CsClient.Connection.WebSocket
 {
     public class WebSocketConnectionTask
     {
@@ -19,7 +19,7 @@ namespace CsClient.Connection
 
         public WebSocketConnectionTask(WebSocketConnection webSocketConnection)
         {
-            this._connection = webSocketConnection;
+            _connection = webSocketConnection;
         }
         /// <summary>
         /// Connects to the websocket asynchronously and recursively handles incoming subscripted 
@@ -51,7 +51,7 @@ namespace CsClient.Connection
 
                         EnergyStatisticsCsvProcessor csvProcessor = new EnergyStatisticsCsvProcessor(samplePath, new WindowsSIDAccountHelper());
                         string statistics = csvProcessor.ProcessCsv();
-                      
+
                         // Send message
                         await _connection.SendMessage(statistics, Constants.EnergyPublishEndpoint);
                     }

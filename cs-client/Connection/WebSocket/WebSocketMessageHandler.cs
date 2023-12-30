@@ -5,7 +5,7 @@ using System.Net.WebSockets;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CsClient.Connection
+namespace CsClient.Connection.WebSocket
 {
     public delegate void WebSocketMessageHandler(WebSocketReceiveResult result, string content);
 }

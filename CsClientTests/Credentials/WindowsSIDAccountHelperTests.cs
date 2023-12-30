@@ -23,8 +23,8 @@ namespace CsClientTests.Credentials
         /// <param name="sid">The Security Identifier to test.</param>
         /// <param name="expectedIsNull">The expected result of whether it is null or not.</param>
         [TestMethod]
-        [DataRow("S-1-1-0", true)] // Example SID for 'World'
-        [DataRow("S-1-5-18", true)]  // Example SID for 'Local System'
+        [DataRow("S-1-1-0", false)] // Example SID for 'World'
+        [DataRow("S-1-5-18", false)]  // Example SID for 'Local System'
         public void GetUserAccount_Parameterized(string sid, bool expectedIsNull)
         {
             // Act

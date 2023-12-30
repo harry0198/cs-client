@@ -15,11 +15,11 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace CsClient.Connection
+namespace CsClient.Connection.WebSocket
 {
     public class WebSocketConnection
     {
-        private static Logger logger = LogManager.GetCurrentClassLogger(); 
+        private static Logger logger = LogManager.GetCurrentClassLogger();
         private readonly Utils.Environment _environment;
         private readonly IWebSocket _webSocket;
         private readonly StompMessageSerializer _serializer;
@@ -30,11 +30,11 @@ namespace CsClient.Connection
         /// <param name="authenticationService">Authentication service provided</param>
         /// <param name="environment"></param>
         /// <param name="webSocket"></param>
-        public WebSocketConnection(Utils.Environment environment, IWebSocket webSocket) 
+        public WebSocketConnection(Utils.Environment environment, IWebSocket webSocket)
         {
-            this._environment = environment;
-            this._webSocket = webSocket;
-            this._serializer = new StompMessageSerializer();
+            _environment = environment;
+            _webSocket = webSocket;
+            _serializer = new StompMessageSerializer();
         }
 
         /// <summary>
@@ -88,7 +88,7 @@ namespace CsClient.Connection
                 }
             }
         }
-        
+
         /// <summary>
         /// Opens the connection to the websocket.
         /// </summary>
@@ -103,37 +103,55 @@ namespace CsClient.Connection
             await SendConnectMessageAsync();
         }
 
+        /// <summary>
+        /// Sends the connect stomp message to the websocket.
+        /// </summary>
+        /// <returns>Task.</returns>
         public async Task SendConnectMessageAsync()
         {
             var connect = new StompMessage(StompCommand.Connect);
             connect["accept-version"] = "1.2";
-            connect["host"] = "";
             await _webSocket.SendAsync(_serializer.Serialize(connect));
         }
 
+        /// <summary>
+        /// Subscribes to the ping channel with the given machineId as connection.
+        /// </summary>
+        /// <param name="machineId">Id for websocket. This should be same as auth.</param>
+        /// <returns>Task.</returns>
+        /// <exception cref="ArgumentException">If machine id is null or empty.</exception>
         public async Task SubscribeToPingChannelAsync(string machineId)
         {
+            if (machineId == null || machineId.Length == 0)
+            {
+                throw new ArgumentException("MachineId cannot be empty or null");
+            }
+
             var subscribe = new StompMessage(StompCommand.Subscribe);
             subscribe["id"] = machineId;
             subscribe["destination"] = Constants.PingEndpoint;
             await _webSocket.SendAsync(_serializer.Serialize(subscribe));
         }
 
+        /// <summary>
+        /// Sends a message to the websocket at the given destination.
+        /// </summary>
+        /// <param name="message">Message to send.</param>
+        /// <param name="destination">Destination for the message.</param>
+        /// <returns>Task.</returns>
+        /// <exception cref="ArgumentException">If either message or destination are null. Or if destination is empty.</exception>
         public async Task SendMessage(string message, string destination)
         {
-            try
+            if (message == null || destination == null || destination.Length == 0)
             {
-                // Create stomp message.
-                var publishStompMessage = new StompMessage(StompCommand.Send, message);
-                publishStompMessage.SetPlainTextContentType();
-                publishStompMessage["destination"] = destination;
-                await _webSocket.SendAsync(_serializer.Serialize(publishStompMessage));
+                throw new ArgumentException("Parameters must not be null and destination must have a length.");
             }
-            catch (Exception e)
-            {
-                logger.Error(e.Message);
-                logger.ForExceptionEvent(e);
-            }
+
+            // Create stomp message.
+            var publishStompMessage = new StompMessage(StompCommand.Send, message);
+            publishStompMessage.SetPlainTextContentType();
+            publishStompMessage["destination"] = destination;
+            await _webSocket.SendAsync(_serializer.Serialize(publishStompMessage));
         }
 
         public class Content

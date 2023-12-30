@@ -1,7 +1,7 @@
 ﻿using CsClient.Credentials;
 using System.Collections.Generic;
 
-namespace CsClientTests
+namespace CsClientTests.Mocks
 {
     /// <summary>
     /// Provides an in-memory credential repository for testing purposes.

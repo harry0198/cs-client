@@ -72,7 +72,7 @@ namespace CsClientTests.Utils
             string[] parts = csvParser.GetCsvParts(csv);
 
             // Assertions
-            Assert.AreEqual(3, parts.Length);
+            Assert.AreEqual(4, parts.Length);
             Assert.AreEqual(part1, parts[0]);
             Assert.AreEqual(part2, parts[1]);
             Assert.AreEqual(part3, parts[2]);

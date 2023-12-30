@@ -4,7 +4,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace CsClient.Connection
+namespace CsClient.Connection.WebSocket
 {
     /// <summary>
     /// Implementation of a WebSocket with additional validations.
@@ -52,7 +52,7 @@ namespace CsClient.Connection
 
             // Receive bytes.
             WebSocketReceiveResult result = await _webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
-            
+
             // Keep reading data from websocket until end of the message is received.
             while (!result.EndOfMessage)
             {

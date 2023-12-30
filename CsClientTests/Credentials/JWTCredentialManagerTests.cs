@@ -1,6 +1,7 @@
 ﻿using CsClient.Credentials;
 using CsClient.Data.DTO;
 using CsClient.Utils;
+using CsClientTests.Mocks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace CsClientTests.Credentials

@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CsClient.Connection
+namespace CsClient.Connection.WebSocket
 {
     public interface IWebSocketSerializer<T>
     {
