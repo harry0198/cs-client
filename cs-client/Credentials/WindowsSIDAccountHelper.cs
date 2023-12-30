@@ -73,8 +73,8 @@ namespace CsClient.Credentials
                     Principal principal = Principal.FindByIdentity(principalContext, IdentityType.Sid, sid.Value);
 
 
-                    // If account type is a user and not a group or other.
-                    if (principal != null && principal is UserPrincipal)
+                    // If account type exists.
+                    if (principal != null)
                     {
                         logger.Info("Found user");
                         AccountType accountType;

@@ -30,9 +30,10 @@ namespace CsClient.Connection
         public WebSocketState State => _webSocket.State;
 
         /// <inheritdoc/>
-        public async Task ConnectAsync(string endpoint)
+        public async Task ConnectAsync(string endpoint, string jwt)
         {
             Uri uri = new Uri(endpoint);
+            _webSocket.Options.SetRequestHeader("Authorization", $"Bearer {jwt}");
 
             await _webSocket.ConnectAsync(uri, CancellationToken.None);
         }

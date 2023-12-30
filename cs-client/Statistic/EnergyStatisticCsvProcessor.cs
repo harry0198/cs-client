@@ -127,7 +127,9 @@ namespace CsClient.Statistic
         private string TruncateStringToLastSlash(string input)
         {
             // Find the last index of '/'
-            int lastIndex = input.LastIndexOf('/');
+            int lastIndexForward = input.LastIndexOf('/');
+            int lastIndexBack = input.LastIndexOf("\\");
+            int lastIndex = Math.Max(lastIndexForward, lastIndexBack);
 
             // If '/' is not found, return the original string
             if (lastIndex == -1)

@@ -37,13 +37,17 @@ namespace CsClient.Connection
 
             try
             {
-                await this._webSocket.ConnectAsync(_environment.GetWebSocketUrl());
+                await this._webSocket.ConnectAsync(_environment.GetWebSocketUrl(), jwt);
 
                 var connect = new StompMessage(StompCommand.Connect);
                 connect["accept-version"] = "1.2";
                 connect["host"] = "";
-                connect["Authorization"] = $"Bearer {jwt}";
                 await _webSocket.SendAsync(serializer.Serialize(connect));
+
+                var sub = new StompMessage(StompCommand.Subscribe);
+                sub["id"] = machineId;
+                sub["destination"] = "/channel/request";
+                await _webSocket.SendAsync(serializer.Serialize(sub));
 
                 while (_webSocket.State == WebSocketState.Open)
                 {
@@ -98,15 +102,6 @@ namespace CsClient.Connection
         {
             public string Subject { get; set; }
             public string Message { get; set; }
-        }
-
-
-        public static string RandomString(int length)
-        {
-            const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-            var random = new Random();
-            return new string(Enumerable.Repeat(chars, length)
-              .Select(s => s[random.Next(s.Length)]).ToArray());
         }
     }
 }

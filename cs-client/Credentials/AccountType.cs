@@ -4,6 +4,7 @@
     {
         LOCAL = 0,
         DOMAIN = 1,
-        UNKNOWN = 2,
+        SYSTEM = 2,
+        UNKNOWN = 3,
     }
 }

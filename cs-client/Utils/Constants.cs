@@ -45,7 +45,7 @@
         /// <summary>
         /// Default host with port to connect with.
         /// </summary>
-        public static readonly string DefaultHost = "localhost:8080";
+        public static readonly string DefaultHost = "192.168.1.16:8080";
 
         /// <summary>
         /// Default web socket url to connect with.
