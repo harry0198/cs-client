@@ -2,35 +2,82 @@
 using CsClient.Credentials;
 using CsClient.Statistic;
 using CsClient.Utils;
+using Extend;
 using NLog;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net.WebSockets;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace CsClient.Connection.WebSocket
 {
+    /// <summary>
+    /// Starts the WebSocket connection, actively listens to the subscribed channels and processes them.
+    /// </summary>
     public class WebSocketConnectionTask
     {
         private static readonly Logger logger = LogManager.GetCurrentClassLogger();
         private readonly WebSocketConnection _connection;
+        private readonly SystemStatistics _statistics;
 
         public WebSocketConnectionTask(WebSocketConnection webSocketConnection)
         {
             _connection = webSocketConnection;
+            _statistics = new SystemStatistics();
         }
+
         /// <summary>
         /// Connects to the websocket asynchronously and recursively handles incoming subscripted 
         /// messages until close message is received.
         /// </summary>
+        /// <param name="jwt">Json Web Token to connect with.</param>
         /// <param name="machineId">Machine id to provide the server with.</param>
         /// <returns>Async Task of connecting.</returns>
         public async Task Run(string jwt, string machineId)
         {
-            // Connect to WebSocket and provide subscription message.
-            await _connection.ConnectAsync(jwt, machineId, ProcessSubscriptionMessageAsync);
+            logger.ConditionalTrace("Entering Connect Async Method");
+            try
+            {
+
+                var t = _connection.State;
+                await _connection.OpenConnectionAsync(jwt);
+                await _connection.SubscribeToPingChannelAsync(machineId);
+
+                logger.ConditionalTrace("Entering recursive check for WebSocket monitoring.");
+                while (_connection.State == WebSocketState.Open)
+                {
+                    // Wait in background until a message is received.
+                    var (result, content) = await _connection.ReceiveAsync();
+
+                    // Exit before invoking.
+                    var rs = result.MessageType;
+                    if (result.MessageType == WebSocketMessageType.Close)
+                    {
+                        switch (result.CloseStatus)
+                        {
+                            case WebSocketCloseStatus.NormalClosure:
+                                break;// todo all other closure types. It crashes if server disconnects here for some reason.
+                        }
+                        break;
+                    }
+
+
+                    // Process message
+                    ProcessSubscriptionMessageAsync(result, content);
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.Fatal(ex.Message);
+                logger.ForExceptionEvent(ex);
+            }
+            finally
+            {
+                // If the WebSocket is still open, close it.
+                if (_connection.State == WebSocketState.Open)
+                {
+                    await _connection.CloseConnectionAsync();
+                }
+            }
         }
 
         /// <summary>
@@ -39,13 +86,15 @@ namespace CsClient.Connection.WebSocket
         /// <param name="webSocketReceiveResult">The received result from the WebSocket <see cref="WebSocketReceiveResult"/>.</param>
         /// <param name="content">Body of the result.</param>
         /// <returns>Asynchronous task of processing the message.</returns>
-        public async void ProcessSubscriptionMessageAsync(WebSocketReceiveResult webSocketReceiveResult, string content)
+        private async void ProcessSubscriptionMessageAsync(WebSocketReceiveResult webSocketReceiveResult, string content)
         {
             switch (webSocketReceiveResult.MessageType)
             {
                 case WebSocketMessageType.Text:
+                    logger.Debug("Identifying message");
                     if (content.Equals(Constants.EnergyPingMessage))
                     {
+                        logger.Debug("Processing Energy Ping Message");
                         EnergyStatisticTask stat = new EnergyStatisticTask();
                         string samplePath = stat.NewSample();
 
@@ -54,6 +103,24 @@ namespace CsClient.Connection.WebSocket
 
                         // Send message
                         await _connection.SendMessage(statistics, Constants.EnergyPublishEndpoint);
+                    }
+                    else if (content.Equals(Constants.UsagePingMessage))
+                    {
+                        logger.Debug("Processing Usage Ping Message");
+                        DateTime timestamp = DateTime.Now;
+                        Task<float> cpuTask = _statistics.GetCpuUsageAsync();
+                        Task<float> memoryTask = _statistics.GetCpuUsageAsync();
+                        Task<float> diskTask = _statistics.GetCpuUsageAsync();
+                        Task<float> networkTask = _statistics.GetCpuUsageAsync();
+
+                        // Wait for all tasks to complete
+                        await Task.WhenAll(cpuTask, memoryTask, diskTask, networkTask);
+
+                        // Generate the csv.
+                        string usageCsv = UsageStatisticsCsvProcessor.GenerateCsv(cpuTask.Result, memoryTask.Result, diskTask.Result, networkTask.Result, timestamp);
+                   
+                        // Send Message
+                        await _connection.SendMessage(usageCsv, Constants.UsagePublishEndpoint);
                     }
                     break;
                 case WebSocketMessageType.Close:

@@ -39,13 +39,13 @@ namespace CsClientTests.Mocks
             
             while (State == WebSocketState.Open)
             {
-                if((DateTime.Now - startTime).TotalSeconds >= 5)
+                if ((DateTime.UtcNow - startTime).TotalSeconds >= 5)
                 {
                     break; // Exit the loop
                 }
 
                 // If message is null, keep monitoring.
-                if (Message == null) continue;
+                if (Message.Count == 0) continue;
                 int dataCount = Encoding.UTF8.GetByteCount(Message.Peek());
                 return (new WebSocketReceiveResult(dataCount, WebSocketMessageType.Text, true), Message.Pop());
             }

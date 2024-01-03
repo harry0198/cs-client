@@ -1,14 +1,9 @@
 ﻿using CsClient.Utils;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Console;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.IO.Pipes;
-using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace CsClient.Credentials
 {
@@ -30,10 +25,17 @@ namespace CsClient.Credentials
             ILoggerFactory factory = LoggerFactory.Create(builder => builder.AddConsole());
             this._logger = factory.CreateLogger<DPAPICredentialRepository>();
         }
+
+        /// <summary>
+        /// Fetches the credentials from the given key.
+        /// </summary>
+        /// <param name="credentialKey">Credential key to fetch value of.</param>
+        /// <returns>The value of the credential or null if not found.</returns>
         public string GetCredential(string credentialKey)
         {
             string keyStoreFile = GetKeyStoreFile(credentialKey);
-            using (FileStream fileStream = new FileStream(keyStoreFile, FileMode.OpenOrCreate))
+            if (!File.Exists(keyStoreFile)) return null;
+            using (FileStream fileStream = new FileStream(keyStoreFile, FileMode.Open))
             {
                 // Decrypt data from file.
                 byte[] entropy = GetEntropy();
@@ -50,6 +52,12 @@ namespace CsClient.Credentials
             }
         }
 
+        /// <summary>
+        /// Saves the credentials by the credential key.
+        /// </summary>
+        /// <param name="credentialKey">Credential key to save.</param>
+        /// <param name="credentialValue">Credential value to save.</param>
+        /// <returns>If successfully saved or not.</returns>
         public bool SaveCredential(string credentialKey, string credentialValue)
         {
             byte[] toEncrypt = UnicodeEncoding.UTF8.GetBytes(credentialValue);
@@ -107,7 +115,8 @@ namespace CsClient.Credentials
                 allBytes = memoryStream.ToArray();
             }
 
-            if (allBytes == null) return null;
+            // If null or empty there is nothing to decode...
+            if (allBytes == null || allBytes.Length == 0) return null;
 
             try
             {

@@ -14,23 +14,23 @@ namespace CsClient.Connection.Stomp
         /// <returns>A serialized version of the given <see cref="StompMessage"/></returns>
         public string Serialize(StompMessage message)
         {
-            var buffer = new StringBuilder();
-
-            buffer.Append(message.Command + "\n");
+            StringBuilder sb = new StringBuilder(message.Command + "\n");
 
             if (message.Headers != null)
             {
                 foreach (var header in message.Headers)
                 {
-                    buffer.Append(header.Key + ":" + header.Value + "\n");
+                    // Stomp Header format is <key>:<value>
+                    sb.Append($"{header.Key}:{header.Value}\n");
                 }
             }
 
-            buffer.Append("\n");
-            buffer.Append(message.Body);
-            buffer.Append('\0');
+            // Stomp defines a new line after headers and then body, then the end of message char.
+            sb.Append("\n");
+            sb.Append(message.Body);
+            sb.Append('\0'); // end of message char.
 
-            return buffer.ToString();
+            return sb.ToString();
         }
 
         /// <summary>
@@ -49,8 +49,12 @@ namespace CsClient.Connection.Stomp
             // Check if string is
             while (!string.IsNullOrEmpty(header))
             {
+                // Split headers to <key>:<value>
                 var split = header.Split(':');
-                if (split.Length == 2) headers[split[0].Trim()] = split[1].Trim();
+                if (split.Length == 2)
+                {
+                    headers[split[0].Trim()] = split[1].Trim();
+                }
                 header = reader.ReadLine() ?? string.Empty;
             }
 

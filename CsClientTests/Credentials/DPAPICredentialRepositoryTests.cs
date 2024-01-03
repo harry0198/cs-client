@@ -2,6 +2,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using CsClient.Utils;
 using System.IO;
+using CsClientTests.Mocks;
 
 namespace CsClientTests.Credentials
 {
@@ -147,20 +148,6 @@ namespace CsClientTests.Credentials
 
             // Assert
             Assert.IsTrue(actualCredential == null, "Credential was not protected properly.");
-        }
-
-        /// <summary>
-        /// Mock Environment to inject as dependency.
-        /// Overrides the <see cref="cs_client.Utils.Environment.GetEntropy"/> function.
-        /// <see cref="cs_client.Utils.Environment"/>
-        /// </summary>
-        public class MockEnvironment : Environment
-        {
-            public string Entropy { get; set; } = Constants.DefaultEntropy;
-            override public string GetEntropy()
-            {
-                return Entropy;
-            }
         }
     }
 }

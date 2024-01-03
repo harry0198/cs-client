@@ -2,18 +2,16 @@
 using CsClient.Data.DTO;
 using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
-using System.Net;
 using System.Net.Http;
-using System.Text;
+using System.Net.NetworkInformation;
 using System.Threading.Tasks;
 
 namespace CsClient.Connection.Service
 {
     public class AuthenticationService
     {
+        private readonly string _authUrl;
         private readonly ICredentialService _credentialService;
         private readonly Utils.Environment _environment;
         private string _jwt;
@@ -21,6 +19,19 @@ namespace CsClient.Connection.Service
         {
             this._credentialService = credentialService;
             this._environment = environment;
+            this._authUrl = $"http://{_environment.GetHost()}/auth/login";
+        }
+
+        /// <summary>
+        /// Pings the authentication endpoint and returns if a response was recevied.
+        /// </summary>
+        /// <returns>If received a result back from the endpoint.</returns>
+        public async Task<bool> PingAsync()
+        {
+            Ping ping = new Ping();
+
+            PingReply result = await ping.SendPingAsync(_authUrl);
+            return result.Status == IPStatus.Success;
         }
 
         /// <summary>
@@ -39,6 +50,12 @@ namespace CsClient.Connection.Service
             return validilityWindow <= token.ValidTo;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="HttpRequestException">If posting a request to the endpoint fails.</exception>
+        /// <exception cref="UriFormatException">If the given url is incorrect format.</exception>
         public async Task<bool> AuthenticateUser()
         {
             UserCredentials creds = _credentialService.GetCredentials();
@@ -49,7 +66,10 @@ namespace CsClient.Connection.Service
                 string body = JsonConvert.SerializeObject(creds);
                 StringContent content = new StringContent(body, System.Text.Encoding.UTF8, "application/json");
 
-                var response = await client.PostAsync($"http://{_environment.GetHost()}/auth/login", content);
+                // Critical, throws http/uri
+                Task<HttpResponseMessage> postTask = client.PostAsync(_authUrl, content);
+                var response = await postTask;
+                
 
                 if (response.IsSuccessStatusCode)
                 {

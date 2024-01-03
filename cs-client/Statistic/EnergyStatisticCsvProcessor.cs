@@ -3,7 +3,6 @@ using CsClient.Utils;
 using Extend;
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -28,8 +27,9 @@ namespace CsClient.Statistic
         /// <summary>
         /// Reads and processes the CSV file, filtering out entries over a specified age.
         /// </summary>
+        /// <param name="removeFileAfterProcess">Should the File be removed after processing.</param>
         /// <returns>Processed CSV data as a string.</returns>
-        public string ProcessCsv()
+        public string ProcessCsv(bool removeFileAfterProcess = true)
         {
             string[] allLines = File.ReadAllLines(_resultPath);
 
@@ -52,6 +52,18 @@ namespace CsClient.Statistic
                 }
             });
 
+
+            if (removeFileAfterProcess)
+            {
+                try
+                {
+                    File.Delete(_resultPath);
+                } catch (Exception ex)
+                {
+                    
+                    // log.
+                }
+            }
 
             return GetHeader() + System.Environment.NewLine + string.Join(System.Environment.NewLine, processedLines);
         }

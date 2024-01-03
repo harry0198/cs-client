@@ -8,13 +8,14 @@ namespace CsClient.Connection.WebSocket
 {
     /// <summary>
     /// Implementation of a WebSocket with additional validations.
+    /// Basically a humble object with a few changes.
+    /// See http://xunitpatterns.com/Humble%20Object.html
     /// </summary>
     public class WebSocketDecorator : IWebSocket
     {
         private readonly ClientWebSocket _webSocket;
         private const int DefaultBufferSize = 1024;
         private const int MaxReceiveFrameSize = 64 * 1024; // Is the max STOMp supported size in the server.
-        private const int MaxSendFrameSize = 512 * 1024;
 
         /// <summary>
         /// Class constructor, initializes the websocket isntance.
@@ -92,7 +93,6 @@ namespace CsClient.Connection.WebSocket
         public async Task SendAsync(string message)
         {
             byte[] messageBytes = Encoding.UTF8.GetBytes(message);
-
             ArraySegment<byte> buffer = new ArraySegment<byte>(messageBytes);
             await _webSocket.SendAsync(buffer, WebSocketMessageType.Text, true, CancellationToken.None);
         }

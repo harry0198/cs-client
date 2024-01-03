@@ -3,66 +3,82 @@
     /// <summary>
     /// Headers for the CSV sent to the cs-server by this (cs-client).
     /// </summary>
-    public class CsClientCsvHeaders
+    public static class CsClientCsvHeaders
     {
         /// <summary>
-        /// Header in the energy usage generated csv file.
+        /// Header of the property that the server accepts.
         /// </summary>
-        public static readonly string AppId = "app-id";
+        public const string CPU = "cpu";
+        /// <summary>
+        /// Header of the property that the server accepts.
+        /// </summary>
+        public const string Memory = "mem";
+        /// <summary>
+        /// Header of the property that the server accepts.
+        /// </summary>
+        public const string Disk = "disk";
+        /// <summary>
+        /// Header of the property that the server accepts.
+        /// </summary>
+        public const string Network = "nwk";
+        /// <summary>
+        /// Header of the property that the server accepts.
+        /// </summary>
+        public const string AppId = "app-id";
 
         /// <summary>
-        /// Header in the energy usage generated csv file.
+        /// Header of the property that the server accepts.
         /// </summary>
-        public static readonly string UserId = "user-id";
+        public const string UserId = "user-id";
 
         /// <summary>
-        /// Header in the energy usage generated csv file.
+        /// Header of the property that the server accepts.
         /// </summary>
-        public static readonly string TimeStamp = "timestamp";
+        public const string TimeStamp = "timestamp";
 
         /// <summary>
-        /// Header in the energy usage generated csv file.
+        /// Header of the property that the server accepts.
         /// </summary>
-        public static readonly string CPUEnergyConsumption = "cpu";
+        public const string CPUEnergyConsumption = "cpu";
 
         /// <summary>
-        /// Header in the energy usage generated csv file.
+        /// Header of the property that the server accepts.
         /// </summary>
-        public static readonly string SocEnergyConsumption = "soc";
+        public const string SocEnergyConsumption = "soc";
 
         /// <summary>
-        /// Header in the energy usage generated csv file.
+        /// Header of the property that the server accepts.
         /// </summary>
-        public static readonly string DisplayEnergyConsumption = "display";
+        public const string DisplayEnergyConsumption = "display";
 
         /// <summary>
-        /// Header in the energy usage generated csv file.
+        /// Header of the property that the server accepts.
         /// </summary>
-        public static readonly string DiskEnergyConsumption = "disk";
+        public const string DiskEnergyConsumption = "disk";
 
         /// <summary>
-        /// Header in the energy usage generated csv file.
+        /// Header of the property that the server accepts.
         /// </summary>
-        public static readonly string NetworkEnergyConsumption = "network";
+        public const string NetworkEnergyConsumption = "network";
 
         /// <summary>
-        /// Header in the energy usage generated csv file.
+        /// Header of the property that the server accepts.
         /// </summary>
-        public static readonly string MBBEnergyConsumption = "mbb";
+        public const string MBBEnergyConsumption = "mbb";
 
         /// <summary>
-        /// Header in the energy usage generated csv file.
+        /// Header of the property that the server accepts.
         /// </summary>
-        public static readonly string OtherEnergyConsumption = "other";
+        public const string OtherEnergyConsumption = "other";
 
         /// <summary>
-        /// Header in the energy usage generated csv file.
+        /// Header of the property that the server accepts.
         /// </summary>
-        public static readonly string EmiEnergyConsumption = "emi";
+        public const string EmiEnergyConsumption = "emi";
 
         /// <summary>
-        /// Header in the energy usage generated csv file.
+        /// Header of the property that the server accepts.
         /// </summary>
-        public static readonly string AccountType = "acc-type";
+        public const string AccountType = "acc-type";
     }
 }

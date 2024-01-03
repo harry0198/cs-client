@@ -5,6 +5,9 @@ using System.Text;
 
 namespace CsClient.Connection.Stomp
 {
+    /// <summary>
+    /// Data class containing fields for a message to be send as STOMP sub-protocol defines..
+    /// </summary>
     public class StompMessage
     {
         private readonly Dictionary<string, string> _headers = new Dictionary<string, string>();
@@ -33,7 +36,15 @@ namespace CsClient.Connection.Stomp
             Body = body;
             _headers = headers;
 
-            this["content-length"] = body.Length.ToString();
+            if (command != null && command.Equals(StompCommand.Connect))
+            {
+                _headers["accept-version"] = "1.2";
+            }
+
+            if (body != null)
+            {
+                _headers["content-length"] = body.Length.ToString();
+            }
         }
 
         public Dictionary<string, string> Headers
@@ -52,21 +63,29 @@ namespace CsClient.Connection.Stomp
         public string Command { get; private set; }
 
         /// <summary>
-        /// Gets or sets the header attributes.
-        /// </summary>
-        /// <param name="header">Header to get/set</param>
-        public string this[string header]
-        {
-            get { return this._headers.ContainsKey(header) ? this._headers[header] : string.Empty; }
-            set { _headers[header] = value; }
-        }
-
-        /// <summary>
         /// Sets the content type to plain text.
         /// </summary>
         public void SetPlainTextContentType()
         {
-            this["content-type"] = "text/plain";
+            _headers["content-type"] = "text/plain";
         } 
+        
+        /// <summary>
+        /// Sets the ID header.
+        /// </summary>
+        /// <param name="id">Id to set.</param>
+        public void SetId(string id)
+        {
+            _headers["id"] = id;
+        }
+
+        /// <summary>
+        /// Sets the destination header.
+        /// </summary>
+        /// <param name="destination">Destination to set.</param>
+        public void SetDestination(string destination)
+        {
+            _headers["destination"] = destination;
+        }
     }
 }

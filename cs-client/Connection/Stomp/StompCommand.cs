@@ -1,15 +1,25 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace CsClient.Connection.Stomp
+﻿namespace CsClient.Connection.Stomp
 {
+    /// <summary>
+    /// Utility class containing the commands a STOMP
+    /// message can send.
+    /// Contains CONNECT, SUBSCRIBE and SEND.
+    /// </summary>
     public static class StompCommand
     {
-        public static readonly string Connect = "CONNECT";
-        public static readonly string Subscribe = "SUBSCRIBE";
-        public static readonly string Send = "SEND";
+        /// <summary>
+        /// Constant for connecting via Stomp Protocol.
+        /// </summary>
+        public const string Connect = "CONNECT";
+
+        /// <summary>
+        /// Constants for subscribing to an endpoint via Stomp Protocol.
+        /// </summary>
+        public const string Subscribe = "SUBSCRIBE";
+
+        /// <summary>
+        /// Constant for sending a message via Stomp Protocol.
+        /// </summary>
+        public const string Send = "SEND";
     }
 }

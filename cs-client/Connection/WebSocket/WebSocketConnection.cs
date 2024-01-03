@@ -5,14 +5,9 @@ using CsClient.Data;
 using CsClient.Data.DTO;
 using CsClient.Statistic;
 using CsClient.Utils;
-using Newtonsoft.Json;
 using NLog;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net.WebSockets;
-using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace CsClient.Connection.WebSocket
@@ -27,7 +22,6 @@ namespace CsClient.Connection.WebSocket
         /// <summary>
         /// Initializes a WebSocketConnection.
         /// </summary>
-        /// <param name="authenticationService">Authentication service provided</param>
         /// <param name="environment"></param>
         /// <param name="webSocket"></param>
         public WebSocketConnection(Utils.Environment environment, IWebSocket webSocket)
@@ -38,63 +32,48 @@ namespace CsClient.Connection.WebSocket
         }
 
         /// <summary>
-        /// Connects to the websocket asynchronously and recursively handles incoming subscripted 
-        /// messages until close message is received.
+        /// Gets the current state of the WebSocket.
         /// </summary>
-        /// <param name="jwt">Json Web Token to connect with.</param>
-        /// <param name="machineId">Machine id to provide the server with.</param>
-        /// <param name="handler">Delegate to handle the WebSocket Received.</param>
-        /// <returns>Async Task of connecting.</returns>
-        public async Task ConnectAsync(string jwt, string machineId, WebSocketMessageHandler handler)
+        public virtual WebSocketState State
         {
-            logger.ConditionalTrace("Entering Connect Async Method");
-            try
+            get
             {
-                await OpenConnectionAsync(jwt);
-                await SubscribeToPingChannelAsync(machineId);
-
-                logger.ConditionalTrace("Entering recursive check for WebSocket monitoring.");
-                while (_webSocket.State == WebSocketState.Open)
-                {
-                    // Wait in background until a message is received.
-                    var (result, content) = await _webSocket.ReceiveAsync();
-
-                    logger.Info("Received channel");
-
-                    // Exit before invoking.
-                    if (result.MessageType == WebSocketMessageType.Close)
-                    {
-                        break;
-                    }
-
-                    StompMessage message = _serializer.Deserialize(content);
-                    string body = message.Body;
-
-                    // Invoke handler
-                    handler.Invoke(result, body);
-                }
-            }
-            catch (Exception ex)
-            {
-                logger.Fatal(ex.Message);
-                logger.ForExceptionEvent(ex);
-            }
-            finally
-            {
-                // If the WebSocket is still open, close it.
-                if (_webSocket.State == WebSocketState.Open)
-                {
-                    await _webSocket.CloseAsync();
-                }
+                return _webSocket.State;
             }
         }
+
+        /// <summary>
+        /// Receives async
+        /// </summary>
+        /// <returns>Task containing <see cref="WebSocketReceiveResult"/> and content body.</returns>
+        public virtual async Task<(WebSocketReceiveResult, string)> ReceiveAsync()
+        {
+            logger.Info("Receive async channel monitor call.");
+            var (result, content) = await _webSocket.ReceiveAsync();
+
+            // Extract body from message before sending.
+            StompMessage message = _serializer.Deserialize(content);
+            string body = message.Body;
+
+            return (result, body);
+        }
+
+        /// <summary>
+        /// Closes the connection async.
+        /// </summary>
+        /// <returns>Task.</returns>
+        public virtual async Task CloseConnectionAsync()
+        {
+            await _webSocket.CloseAsync();
+        }
+
 
         /// <summary>
         /// Opens the connection to the websocket.
         /// </summary>
         /// <param name="jwt">Json Web Token to provide as authentication credentials.</param>
         /// <returns>Asynchronous Task of opening the connection.</returns>
-        public async Task OpenConnectionAsync(string jwt)
+        public virtual async Task OpenConnectionAsync(string jwt)
         {
             // Initialize handshake with server.
             await _webSocket.ConnectAsync(_environment.GetWebSocketUrl(), jwt);
@@ -107,10 +86,9 @@ namespace CsClient.Connection.WebSocket
         /// Sends the connect stomp message to the websocket.
         /// </summary>
         /// <returns>Task.</returns>
-        public async Task SendConnectMessageAsync()
+        public virtual async Task SendConnectMessageAsync()
         {
             var connect = new StompMessage(StompCommand.Connect);
-            connect["accept-version"] = "1.2";
             await _webSocket.SendAsync(_serializer.Serialize(connect));
         }
 
@@ -120,7 +98,7 @@ namespace CsClient.Connection.WebSocket
         /// <param name="machineId">Id for websocket. This should be same as auth.</param>
         /// <returns>Task.</returns>
         /// <exception cref="ArgumentException">If machine id is null or empty.</exception>
-        public async Task SubscribeToPingChannelAsync(string machineId)
+        public virtual async Task SubscribeToPingChannelAsync(string machineId)
         {
             if (machineId == null || machineId.Length == 0)
             {
@@ -128,8 +106,8 @@ namespace CsClient.Connection.WebSocket
             }
 
             var subscribe = new StompMessage(StompCommand.Subscribe);
-            subscribe["id"] = machineId;
-            subscribe["destination"] = Constants.PingEndpoint;
+            subscribe.SetId(machineId);
+            subscribe.SetDestination(Constants.PingEndpoint);
             await _webSocket.SendAsync(_serializer.Serialize(subscribe));
         }
 
@@ -140,7 +118,7 @@ namespace CsClient.Connection.WebSocket
         /// <param name="destination">Destination for the message.</param>
         /// <returns>Task.</returns>
         /// <exception cref="ArgumentException">If either message or destination are null. Or if destination is empty.</exception>
-        public async Task SendMessage(string message, string destination)
+        public virtual async Task SendMessage(string message, string destination)
         {
             if (message == null || destination == null || destination.Length == 0)
             {
@@ -150,7 +128,7 @@ namespace CsClient.Connection.WebSocket
             // Create stomp message.
             var publishStompMessage = new StompMessage(StompCommand.Send, message);
             publishStompMessage.SetPlainTextContentType();
-            publishStompMessage["destination"] = destination;
+            publishStompMessage.SetDestination(destination);
             await _webSocket.SendAsync(_serializer.Serialize(publishStompMessage));
         }
 

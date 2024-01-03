@@ -33,7 +33,7 @@ namespace CsClientTests.Connection
         {
             // Arrange
             _webSocket.RejectOpenRequest = false;
-            string expectedConnectMessage = "CONNECT\ncontent-length:0\naccept-version:1.2\n\n\0";
+            string expectedConnectMessage = "CONNECT\naccept-version:1.2\ncontent-length:0\n\n\0";
 
             // Act
             _connection.OpenConnectionAsync("").Wait();
@@ -71,7 +71,7 @@ namespace CsClientTests.Connection
         public async Task SendConnectMessageAsync_DoesSendCorrectly()
         {
             // Arrange
-            string expectedMessage = "CONNECT\ncontent-length:0\naccept-version:1.2\n\n\0";
+            string expectedMessage = "CONNECT\naccept-version:1.2\ncontent-length:0\n\n\0";
 
             // Act
             await _connection.SendConnectMessageAsync();
@@ -147,6 +147,27 @@ namespace CsClientTests.Connection
             // Assert
             Assert.AreEqual(1, _webSocket.Message.Count());
             Assert.AreEqual(expectedMessage , _webSocket.Message.Pop());
+        }
+
+        /// <summary>
+        /// Tests that the receive async method does receive messages.
+        /// </summary>
+        /// <returns>Task.</returns>
+        [TestMethod]
+        public async Task ReceiveAsync_DoesReceive()
+        {
+            // Arrange
+            string expected = "send";
+            string sendMe = $"SEND\ncontent-length:{expected.Length}\ncontent-type:text/plain\ndestination:dest\n\n{expected}\0";
+            _webSocket.Message.Push(sendMe);
+            _webSocket.State = WebSocketState.Open;
+
+            // Act
+            var (result, content) = await _connection.ReceiveAsync();
+
+            // Assert
+            Assert.AreEqual(expected, content);
+            Assert.AreEqual(WebSocketMessageType.Text, result.MessageType);
         }
     }
 }
