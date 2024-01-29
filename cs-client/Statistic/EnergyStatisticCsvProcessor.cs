@@ -1,6 +1,7 @@
 ﻿using CsClient.Credentials;
 using CsClient.Utils;
 using Extend;
+using NLog;
 using System;
 using System.Collections.Concurrent;
 using System.IO;
@@ -15,6 +16,7 @@ namespace CsClient.Statistic
     /// </summary>
     public class EnergyStatisticsCsvProcessor
     {
+        private static readonly Logger logger = LogManager.GetCurrentClassLogger();
         private readonly string _resultPath;
         private readonly IAccountHelper _accountHelper;
 
@@ -29,8 +31,14 @@ namespace CsClient.Statistic
         /// </summary>
         /// <param name="removeFileAfterProcess">Should the File be removed after processing.</param>
         /// <returns>Processed CSV data as a string.</returns>
+        /// <exception cref="FileNotFoundException">If the energy statistic CSV file cannot be found.</exception>
         public string ProcessCsv(bool removeFileAfterProcess = true)
         {
+            if (!File.Exists(_resultPath))
+            {
+                logger.Error("Tried to process generated energy CSV but no file was found! Does this system support energy statistics data?");
+                throw new FileNotFoundException("Could not find energy CSV file.");
+            }
             string[] allLines = File.ReadAllLines(_resultPath);
 
             string header = allLines.FirstOrDefault();
@@ -60,8 +68,8 @@ namespace CsClient.Statistic
                     File.Delete(_resultPath);
                 } catch (Exception ex)
                 {
-                    
-                    // log.
+                    logger.Warn("Unable to delete energy statistics CSV file. This may lead to excessive application storage consumption. See: " + _resultPath);
+                    logger.Warn("Operation error msg: " + ex.Message);
                 }
             }
 

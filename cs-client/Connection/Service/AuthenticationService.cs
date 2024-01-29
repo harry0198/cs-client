@@ -74,7 +74,7 @@ namespace CsClient.Connection.Service
                 if (response.IsSuccessStatusCode)
                 {
                     string responseContent = await response.Content.ReadAsStringAsync();
-                    LoginResponse loginResponse = JsonConvert.DeserializeObject<LoginResponse>(responseContent); // TODO: catch errors.
+                    LoginResponse loginResponse = JsonConvert.DeserializeObject<LoginResponse>(responseContent);
                     this._jwt = loginResponse.AccessToken;
 
                     return true;

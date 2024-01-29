@@ -1,5 +1,6 @@
 ﻿using CsClient.Data.DTO;
 using CsClient.Utils;
+using NLog;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -19,10 +20,13 @@ namespace CsClient.Statistic
     /// </summary>
     public class EnergyStatisticTask
     {
+        private static readonly Logger logger = LogManager.GetCurrentClassLogger();
+
         /// <summary>
         /// Creates a new sample period for retrieving the energy consumption information.
         /// This clears the database and then starts a new session if possible.
         /// </summary>
+        /// <exception cref="NotSupportedException">If OS does not support this tool / exit code is non-success.</exception>
         public string NewSample()
         {
             // Get the path of the system's temporary folder
@@ -51,8 +55,11 @@ namespace CsClient.Statistic
 
                 process.Start();
                 process.WaitForExit();
-                string output = process.StandardOutput.ReadToEnd();
-                string err = process.StandardError.ReadToEnd();
+                if (process.ExitCode != 0 )
+                {
+                    logger.Error("Process exit with non-success exit code. Does this OS support this utility? Process Exit Code: " + process.ExitCode);
+                    throw new NotSupportedException("Energy Estimation Engine exited with fatal error.");
+                }
             } catch (UnauthorizedAccessException ex)
             {
                 Console.Error.WriteLine(ex.Message);

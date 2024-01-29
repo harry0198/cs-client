@@ -68,12 +68,12 @@
         /// <summary>
         /// Default host with port to connect with.
         /// </summary>
-        public const string DefaultHost = "192.168.1.16:8080";
+        public const string DefaultHost = "localhost:8080";
 
         /// <summary>
         /// Default web socket url to connect with.
         /// </summary>
-        public const string DefaultWebSocketUrl = "ws://192.168.1.16:8080/handshake";
+        public const string DefaultWebSocketUrl = "ws://localhost:8080/handshake";
 
         /// <summary>
         /// Environment variable to change the web socket connection url.

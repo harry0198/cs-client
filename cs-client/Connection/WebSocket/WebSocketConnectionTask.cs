@@ -5,6 +5,7 @@ using CsClient.Utils;
 using Extend;
 using NLog;
 using System;
+using System.IO;
 using System.Net.WebSockets;
 using System.Threading.Tasks;
 
@@ -95,14 +96,25 @@ namespace CsClient.Connection.WebSocket
                     if (content.Equals(Constants.EnergyPingMessage))
                     {
                         logger.Debug("Processing Energy Ping Message");
-                        EnergyStatisticTask stat = new EnergyStatisticTask();
-                        string samplePath = stat.NewSample();
+                        try
+                        {
+                            EnergyStatisticTask stat = new EnergyStatisticTask();
+                            string samplePath = stat.NewSample();
 
-                        EnergyStatisticsCsvProcessor csvProcessor = new EnergyStatisticsCsvProcessor(samplePath, new WindowsSIDAccountHelper());
-                        string statistics = csvProcessor.ProcessCsv();
+                            EnergyStatisticsCsvProcessor csvProcessor = new EnergyStatisticsCsvProcessor(samplePath, new WindowsSIDAccountHelper());
+                            string statistics = csvProcessor.ProcessCsv();
 
-                        // Send message
-                        await _connection.SendMessage(statistics, Constants.EnergyPublishEndpoint);
+                            // Send message
+                            await _connection.SendMessage(statistics, Constants.EnergyPublishEndpoint);
+                        }
+                        catch (NotSupportedException)
+                        {
+                            logger.Error("Did not send energy information - nothing to send.");
+                        }
+                        catch (FileNotFoundException)
+                        {
+                            logger.Error("Energy Statistic task exit successfully but no file in location was found. Does this program lack permissions?");
+                        }
                     }
                     else if (content.Equals(Constants.UsagePingMessage))
                     {
