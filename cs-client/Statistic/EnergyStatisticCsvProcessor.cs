@@ -49,7 +49,7 @@ namespace CsClient.Statistic
             ConcurrentBag<string> processedLines = new ConcurrentBag<string>();
 
             // Concurrently process each line in the file.
-            Parallel.ForEach(dataLines, (line) =>
+            /*Parallel.ForEach(dataLines, (line) =>
             {
                 string processedLine = ProcessLine(csvParser, line);
 
@@ -58,7 +58,19 @@ namespace CsClient.Statistic
                 {
                     processedLines.Add(processedLine);
                 }
-            });
+            });*/
+            for (int i = dataLines.Length -1; i >= 0; i--)
+            {
+                string line = dataLines[i];
+                string processedLine = ProcessLine(csvParser, line);
+
+                // Add to concurrent bag if not null or is empty.
+                if (!processedLine.IsNullOrEmpty())
+                {
+                    processedLines.Add(processedLine);
+                }
+            }
+               
 
 
             if (removeFileAfterProcess)
@@ -99,9 +111,15 @@ namespace CsClient.Statistic
             string timeStampOptional = csvParser.GetStringValueWithHeader(MicrosoftCsvHeaders.TimeStamp, parts);
 
             if (timeStampOptional == null) return null;
-
-            DateTime dateTime = DateTime.ParseExact(timeStampOptional, "yyyy-MM-dd:HH:mm:ss.ffff", null).ToUniversalTime();
-
+            DateTime dateTime;
+            try
+            {
+                dateTime = DateTime.ParseExact(timeStampOptional, "yyyy-MM-dd:HH:mm:ss.ffff", null).ToUniversalTime().AddHours(1);
+            } catch (FormatException)
+            {
+                logger.Warn("Failed to process line: " + line);
+                return "";
+            }
             if (DateTime.UtcNow.AddMinutes(-1) > dateTime) return null;
 
             return BuildCsvLine(csvParser, parts, dateTime);
