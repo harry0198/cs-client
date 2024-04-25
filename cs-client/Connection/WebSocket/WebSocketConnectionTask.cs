@@ -121,9 +121,9 @@ namespace CsClient.Connection.WebSocket
                         logger.Debug("Processing Usage Ping Message");
                         DateTime timestamp = DateTime.Now;
                         Task<float> cpuTask = _statistics.GetCpuUsageAsync();
-                        Task<float> memoryTask = _statistics.GetCpuUsageAsync();
-                        Task<float> diskTask = _statistics.GetCpuUsageAsync();
-                        Task<float> networkTask = _statistics.GetCpuUsageAsync();
+                        Task<float> memoryTask = _statistics.GetMemoryUsageAsync();
+                        Task<float> diskTask = _statistics.GetDiskUsageAsync();
+                        Task<float> networkTask = _statistics.GetNetworkUsageAsync();
 
                         // Wait for all tasks to complete
                         await Task.WhenAll(cpuTask, memoryTask, diskTask, networkTask);
