@@ -24,7 +24,7 @@ namespace CsClient.Statistic
             _cpuSearcher = new ManagementObjectSearcher("SELECT LoadPercentage FROM CIM_Processor");
             _memorySearcher = new ManagementObjectSearcher("SELECT FreePhysicalMemory FROM CIM_OperatingSystem");
             _diskSearcher = new ManagementObjectSearcher("SELECT FreeSpace FROM Win32_LogicalDisk WHERE DeviceID='C:'");
-            _networkSearcher = new ManagementObjectSearcher("SELECT * FROM Win32_NetworkAdapterConfiguration");
+            _networkSearcher = new ManagementObjectSearcher("SELECT * FROM Win32_PerfFormattedData_Tcpip_NetworkInterface");
         }
 
         /// <summary>
@@ -60,7 +60,7 @@ namespace CsClient.Statistic
         /// <returns>Network usage task.</returns>
         public async Task<float> GetNetworkUsageAsync()
         {
-            float currentBytesPerSec = await GetUsageAsync(_networkSearcher, "CurrentBandwidth", "network-bandiwdth");
+            float currentBytesPerSec = await GetUsageAsync(_networkSearcher, "CurrentBandwidth", "network-bandwidth");
             float bytesPerSec = await GetUsageAsync(_networkSearcher, "BytesTotalPersec", "network-bytes");
 
             return (bytesPerSec / currentBytesPerSec) * 100;
